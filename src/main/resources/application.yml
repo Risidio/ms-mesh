@@ -1,0 +1,50 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 544ed67fb1388bed1d75
+            clientSecret: e934104770bceae1aa57ad85d42d5c647415a2a2
+application:
+   mongoIp: mongodb://localhost
+   mongoPort: 27017
+   mongoDbName: mesh
+cloudinary:
+   cloudName: mijo-enterprises
+   apiKey: 959459182317748
+   apiSecret: ne8mEmuU4LIszN6Ir0M4Q1jy8wc
+   envVar: CLOUDINARY_URL=cloudinary://959459182317748:ne8mEmuU4LIszN6Ir0M4Q1jy8wc@mijo-enterprises
+   baseDeliveryUrl: http://res.cloudinary.com/mijo-enterprises
+   secureDeliveryUrl: https://res.cloudinary.com/mijo-enterprises
+   apiBaseUrl: https://api.cloudinary.com/v1_1/mijo-enterprises
+
+---
+
+spring:
+   profiles: test
+application:
+   mongoIp: mongodb://localhost
+
+---
+
+spring:
+    profiles: docker-dev
+application:
+   mongoIp: mongodb://localhost
+
+---
+
+spring:
+    profiles: staging
+application:
+   mongoIp: mongodb://mongodb
+   mongoPort: 27017
+
+---
+
+spring:
+    profiles: production
+application:
+   mongoIp: mongodb://mongodb
+   mongoPort: 27017
