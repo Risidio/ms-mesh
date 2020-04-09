@@ -1,4 +1,4 @@
-package com.bidlogix.mesh;
+package com.radicle.mesh;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +18,7 @@ public class MeshApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("*");
+				registry.addMapping("/**").allowedOrigins("http://localhost:8080", "http://localhost:8081", "http://physical.assets.local");
 			}
 		};
 	}

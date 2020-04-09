@@ -1,4 +1,4 @@
-package com.bidlogix.mesh.service;
+package com.radicle.mesh.service;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

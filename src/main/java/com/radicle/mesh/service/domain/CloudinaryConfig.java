@@ -1,4 +1,4 @@
-package com.bidlogix.mesh.service.domain;
+package com.radicle.mesh.service.domain;
 
 import java.util.UUID;
 

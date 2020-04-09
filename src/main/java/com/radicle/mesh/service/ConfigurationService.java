@@ -1,8 +1,8 @@
-package com.bidlogix.mesh.service;
+package com.radicle.mesh.service;
 
 import java.util.Optional;
 
-import com.bidlogix.mesh.service.domain.Configuration;
+import com.radicle.mesh.service.domain.Configuration;
 
 
 public interface ConfigurationService

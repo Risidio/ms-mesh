@@ -1,4 +1,4 @@
-package com.bidlogix.mesh.service.domain;
+package com.radicle.mesh.service.domain;
 
 import java.io.Serializable;
 import java.util.UUID;

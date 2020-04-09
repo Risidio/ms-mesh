@@ -1,4 +1,4 @@
-package com.bidlogix.mesh;
+package com.radicle.mesh;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

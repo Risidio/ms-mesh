@@ -1,4 +1,4 @@
-package com.bidlogix.mesh.api;
+package com.radicle.mesh.api;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bidlogix.mesh.service.CloudinarySettings;
-import com.bidlogix.mesh.service.domain.CloudinaryConfig;
+import com.radicle.mesh.service.CloudinarySettings;
+import com.radicle.mesh.service.domain.CloudinaryConfig;
 
 @RestController
 @CrossOrigin(origins = { "http://localhost:8080", "http://localhost:8081", "http://api.assets.local" }, maxAge = 6000)

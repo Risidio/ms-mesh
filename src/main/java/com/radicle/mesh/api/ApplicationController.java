@@ -1,4 +1,4 @@
-package com.bidlogix.mesh.api;
+package com.radicle.mesh.api;
 
 import java.util.Collections;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.bidlogix.mesh;
+package com.radicle.mesh;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;

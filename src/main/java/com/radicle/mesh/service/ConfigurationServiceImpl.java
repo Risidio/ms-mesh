@@ -1,11 +1,11 @@
-package com.bidlogix.mesh.service;
+package com.radicle.mesh.service;
 
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bidlogix.mesh.service.domain.Configuration;
+import com.radicle.mesh.service.domain.Configuration;
 
 @Service
 public class ConfigurationServiceImpl implements ConfigurationService {
