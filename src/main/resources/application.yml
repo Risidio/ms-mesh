@@ -8,7 +8,7 @@ spring:
             clientSecret: e934104770bceae1aa57ad85d42d5c647415a2a2
 application:
    mongoIp: mongodb://localhost
-   mongoPort: 27017
+   mongoPort: 27019
    mongoDbName: mesh
 cloudinary:
    cloudName: mijo-enterprises
@@ -39,7 +39,7 @@ spring:
     profiles: staging
 application:
    mongoIp: mongodb://mongodb
-   mongoPort: 27017
+   mongoPort: 27019
 
 ---
 
@@ -47,4 +47,4 @@ spring:
     profiles: production
 application:
    mongoIp: mongodb://mongodb
-   mongoPort: 27017
+   mongoPort: 27019
