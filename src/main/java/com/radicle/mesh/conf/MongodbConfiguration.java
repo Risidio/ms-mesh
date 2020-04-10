@@ -23,7 +23,7 @@ public class MongodbConfiguration extends AbstractMongoClientConfiguration {
 
 	@Override
 	protected String getMappingBasePackage() {
-		return "com.bidlogix";
+		return "com.radicle";
 	}
 
     @Override
