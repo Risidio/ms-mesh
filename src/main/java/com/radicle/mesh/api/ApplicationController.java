@@ -9,7 +9,12 @@ import org.springframework.web.servlet.view.RedirectView;
 @RestController
 public class ApplicationController {
 
-    @GetMapping(value = "/")
+	@GetMapping(value = "/api/server/time")
+	public Long servertime() {
+		return System.currentTimeMillis();
+	}
+
+	@GetMapping(value = "/")
 	public RedirectView bounceBack(HttpServletRequest request) {
 		return new RedirectView("http://c1.assets.local/login");
 	}

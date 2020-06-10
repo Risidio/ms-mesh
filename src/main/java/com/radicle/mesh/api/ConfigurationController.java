@@ -14,7 +14,7 @@ import com.radicle.mesh.service.CloudinarySettings;
 import com.radicle.mesh.service.domain.CloudinaryConfig;
 
 @RestController
-@CrossOrigin(origins = { "http://localhost:8080", "http://localhost:8081", "http://api.assets.local" }, maxAge = 6000)
+@CrossOrigin(origins = { "*" }, maxAge = 6000)
 public class ConfigurationController {
 
 	@Autowired private CloudinarySettings cloudinarySettings;

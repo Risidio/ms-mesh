@@ -6,10 +6,13 @@ spring:
           github:
             clientId: 544ed67fb1388bed1d75
             clientSecret: e934104770bceae1aa57ad85d42d5c647415a2a2
-application:
-   mongoIp: mongodb://localhost
-   mongoPort: 27017
-   mongoDbName: mesh
+radicle:
+   security:
+      enable-csrf: false
+   mongo:
+      mongoIp: mongodb://mongodb
+      mongoPort: 27017
+      mongoDbName: assets
 cloudinary:
    cloudName: mijo-enterprises
    apiKey: 959459182317748
