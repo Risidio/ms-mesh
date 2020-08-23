@@ -67,6 +67,9 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		if (path.startsWith("/lsat/v1/payment") || path.startsWith("/lsat/payment/")) {
 			protectd = true;
 		}
+		if (path.startsWith("/mesh/v1/shaker")) {
+			protectd = true;
+		}
 		if (apiKey != null && !apiKey.startsWith(BLOCKSTACK)) {
 			protectd = false;
 		}

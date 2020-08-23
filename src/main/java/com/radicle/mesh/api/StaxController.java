@@ -21,6 +21,7 @@ import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.api.model.Principal;
+import com.radicle.mesh.api.model.Shaker;
 
 @RestController
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
@@ -30,6 +31,15 @@ public class StaxController {
 	@Value("${radicle.stax.base-path}") String basePath;
 	@Value("${radicle.stax.sidecar-path}") String sidecarPath;
 	@Autowired private ObjectMapper mapper;
+
+	@PostMapping(value = "/v1/shaker")
+	public Shaker superAdmin(HttpServletRequest request) {
+		String user = (String) request.getSession().getAttribute("USERNAME");
+		if (user == null || !user.equals("mijoco.id.blockstack")) {
+			return null;
+		}
+		return new Shaker();
+	}
 
 	@PostMapping(value = "/v2/accounts")
 	public String accounts(HttpServletRequest request, @RequestBody Principal principal) {
