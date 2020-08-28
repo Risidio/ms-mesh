@@ -46,8 +46,6 @@ public class GaiaInterceptor implements HandlerInterceptor {
 						throw new Exception("Failed validation of jwt token");
 					}
 					request.getSession().setAttribute("USERNAME", username);
-				} else {
-					logger.info("Authentication not required.");
 				}
 			} else if (handler instanceof AbstractHandlerMapping) {
 				// error occurred..
