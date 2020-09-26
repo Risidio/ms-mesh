@@ -21,6 +21,7 @@ import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.api.model.Principal;
+import com.radicle.mesh.api.model.ReadContract;
 import com.radicle.mesh.api.model.Shaker;
 
 @RestController
@@ -50,11 +51,21 @@ public class StaxController {
 		}
 		
 		ResponseEntity<String> response = null;
-		if (principal.getHttpMethod() != null && principal.getHttpMethod().equals("post")) {
+		if (principal.getHttpMethod() != null && principal.getHttpMethod().equalsIgnoreCase("POST")) {
 			response = restTemplate.exchange(url, HttpMethod.POST, getRequestEntity(principal), String.class);
 		} else {
 			response = restTemplate.exchange(url, HttpMethod.GET, getRequestEntity(principal), String.class);
 		}
+		return response.getBody();
+	}
+
+	@PostMapping(value = "/v2/contract/read")
+	public String contractRead(HttpServletRequest request, @RequestBody ReadContract txOptions) {
+		String url = basePath + "/v2/contracts/call-read/" + txOptions.getContractAddress() + "/" + txOptions.getContractName() + "/" + txOptions.getFunctionName();
+		ResponseEntity<String> response = null;
+		String jsonInString = convertMessage(txOptions.getRcp());
+		HttpEntity<String> e = new HttpEntity<String>(jsonInString, getHeaders());
+		response = restTemplate.exchange(url, HttpMethod.POST, e, String.class);
 		return response.getBody();
 	}
 
@@ -80,7 +91,7 @@ public class StaxController {
 
 	private HttpEntity<String> getRequestEntity(Principal principal) {
 		try {
-			if (principal.getHttpMethod() == null || !principal.getHttpMethod().contentEquals("POST")) {
+			if (principal.getHttpMethod() == null || !principal.getHttpMethod().equalsIgnoreCase("POST")) {
 				return new HttpEntity<String>(new HttpHeaders());
 			} else {
 				String jsonInString = convertMessage(principal.getPostData());
@@ -100,13 +111,13 @@ public class StaxController {
 	}
 
 	private HttpHeaders getHeaders() {
-		String val = " "; // environment.getProperty("BTC_ACCESS_KEY_ID");
-		String auth = "BTC_ACCESS_KEY_ID" + ":" + val;
-		String encodedAuth = new String(Base64.getEncoder().encode(auth.getBytes(Charset.forName("UTF8"))));
+//		String val = " "; // environment.getProperty("BTC_ACCESS_KEY_ID");
+//		String auth = "BTC_ACCESS_KEY_ID" + ":" + val;
+//		String encodedAuth = new String(Base64.getEncoder().encode(auth.getBytes(Charset.forName("UTF8"))));
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.TEXT_PLAIN);
-		headers.set("Authorization", "Basic " + encodedAuth.toString());
-		//headers.setContentLength(jsonInString.length());
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		// headers.set("Authorization", "Basic " + encodedAuth.toString());
+		// headers.setContentLength(jsonInString.length());
 		return headers;
 	}
 }
