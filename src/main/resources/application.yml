@@ -33,8 +33,8 @@ application:
    mongoIp: mongodb://localhost
 radicle:
    stax:
-      base-path: http://178.79.138.62:20443
-      sidecar-path: http://178.79.138.62:3999
+      base-path: http://139.162.204.44:20443
+      sidecar-path: http://139.162.204.44:3999
 
 ---
 
@@ -44,8 +44,8 @@ application:
    mongoIp: mongodb://localhost
 radicle:
    stax:
-      base-path: http://178.79.138.62:20443
-      sidecar-path: http://178.79.138.62:3999
+      base-path: http://139.162.204.44:20443
+      sidecar-path: http://139.162.204.44:3999
 
 ---
 
@@ -56,8 +56,8 @@ application:
    mongoPort: 27017
 radicle:
    stax:
-      base-path: http://178.79.138.62:20443
-      sidecar-path: http://178.79.138.62:3999
+      base-path: http://139.162.204.44:20443
+      sidecar-path: http://139.162.204.44:3999
 
 ---
 
