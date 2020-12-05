@@ -6,6 +6,12 @@ spring:
           github:
             clientId: 544ed67fb1388bed1d75
             clientSecret: e934104770bceae1aa57ad85d42d5c647415a2a2
+opennode:
+   api:
+      apiEndpoint: https://dev-api.opennode.com
+      appEndpoint: https://dev.opennode.com
+      apiKey: 75f7c1ee-fc87-488a-90fd-ce786c207624
+      ecomKey: ac0ce15c-fbcd-43f9-b785-58aed4b16e41
 radicle:
    security:
       enable-csrf: false
