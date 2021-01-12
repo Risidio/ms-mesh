@@ -50,7 +50,7 @@ public class MeshApplication {
 		}
 		SquareClient client = new SquareClient.Builder()
 			    .environment(sqenv)
-			    .accessToken(environment.getProperty("SQUARE_LOCATION_ID"))
+			    .accessToken(environment.getProperty("SQUARE_ACCESS_TOKEN"))
 			    .build();
 		return client;
 	}
