@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,13 +29,9 @@ import com.squareup.square.models.Payment;
 public class SquareUpController {
 
     private static final Logger logger = LogManager.getLogger(SquareUpController.class);
-	@Value("${squareup.api.applicationName}") String applicationName;
-	@Value("${squareup.api.locationId}") String locationId;
-	@Value("${squareup.api.redirectUrl}") String redirectUrl;
-	@Value("${squareup.api.applicationId}") String applicationId;
-	@Value("${squareup.api.applicationSecret}") String applicationSecret;
 	@Autowired private SquareClient squareClient;
 	@Autowired private ObjectMapper mapper;
+	@Autowired private Environment environment;
 
 	@GetMapping(value = "/oauth-redirect")
 	public String fetchPayment(HttpServletRequest request) {
@@ -54,7 +50,7 @@ public class SquareUpController {
 				paymentRequest.getIdempotencyKey(),
 		        bodyAmountMoney)
 		    .autocomplete(true)
-		    .locationId(locationId)
+		    .locationId(environment.getProperty("SQUARE_LOCATION_ID"))
 		    .build();
 		PaymentsApi paymentsApi = squareClient.getPaymentsApi();
 		CreatePaymentResponse cpr = paymentsApi.createPayment(body);

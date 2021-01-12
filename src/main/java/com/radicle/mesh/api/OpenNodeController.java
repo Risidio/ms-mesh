@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -38,10 +39,10 @@ public class OpenNodeController {
     private static final Logger logger = LogManager.getLogger(OpenNodeController.class);
 	@Autowired private RestOperations restTemplate;
 	@Value("${opennode.api.apiEndpoint}") String apiEndpoint;
-	@Value("${opennode.api.apiKey}") String apiKey;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
     private static final String HMAC_SHA512 = "HmacSHA512";
+	@Autowired private Environment environment;
 
 	@PostMapping(value = "/v2/fetchPayment")
 	public String fetchPayment(HttpServletRequest request, @RequestBody FetchPayment fetchPayment) {
@@ -87,7 +88,7 @@ public class OpenNodeController {
 //		String encodedAuth = new String(Base64.getEncoder().encode(auth.getBytes(Charset.forName("UTF8"))));
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", apiKey);
+		headers.set("Authorization", environment.getProperty("OPENNODE_API_KEY"));
 		// headers.setContentLength(jsonInString.length());
 		return headers;
 	}

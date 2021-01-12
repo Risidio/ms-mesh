@@ -2,11 +2,12 @@ package com.radicle.mesh;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -19,14 +20,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.squareup.square.Environment;
 import com.squareup.square.SquareClient;
 
 @SpringBootApplication
 @ComponentScan("com.radicle")
 public class MeshApplication {
 
-	@Value("${squareup.api.accessToken}") String accessToken;
+	@Autowired private Environment environment;
 
 	public static void main(String[] args) {
 		SpringApplication.run(MeshApplication.class, args);
@@ -44,9 +44,13 @@ public class MeshApplication {
 
 	@Bean
 	public SquareClient squareClient() {
+		com.squareup.square.Environment sqenv = com.squareup.square.Environment.PRODUCTION;
+		if (environment.getProperty("SQUARE_APPLICATION_ID").indexOf("sandbox") > -1) {
+			sqenv = com.squareup.square.Environment.SANDBOX;
+		}
 		SquareClient client = new SquareClient.Builder()
-			    .environment(Environment.SANDBOX)
-			    .accessToken(accessToken)
+			    .environment(sqenv)
+			    .accessToken(environment.getProperty("SQUARE_LOCATION_ID"))
 			    .build();
 		return client;
 	}

@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "cloudinary")
 public class CloudinarySettings {
 	private String cloudName;
-	private String apiKey;
-	private String apiSecret;
 	private String envVar;
 	private String baseDeliveryUrl;
 	private String secureDeliveryUrl;
@@ -22,22 +20,6 @@ public class CloudinarySettings {
 
 	public void setCloudName(String cloudName) {
 		this.cloudName = cloudName;
-	}
-
-	public String getApiKey() {
-		return apiKey;
-	}
-
-	public void setApiKey(String apiKey) {
-		this.apiKey = apiKey;
-	}
-
-	public String getApiSecret() {
-		return apiSecret;
-	}
-
-	public void setApiSecret(String apiSecret) {
-		this.apiSecret = apiSecret;
 	}
 
 	public String getEnvVar() {
