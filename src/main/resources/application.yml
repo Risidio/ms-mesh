@@ -12,13 +12,31 @@ opennode:
       appEndpoint: https://dev.opennode.com
       apiKey: 75f7c1ee-fc87-488a-90fd-ce786c207624
       ecomKey: ac0ce15c-fbcd-43f9-b785-58aed4b16e41
+squareup:
+   api:
+      applicationName: rpay-prom
+      locationId: LA14YJ0CQM53A
+      redirectUrl: https://tapi.risidio.com/mesh/oauth-redirect
+      applicationId: sandbox-sq0idb-B8CL6u-_2GdwAvkgg6M7WA
+      applicationSecret: sandbox-sq0csb-jA9NywqltQkVpYSLdlPLUybKgti8V4PvoDw6yZnwG0o
+      accessToken: EAAAENUG4tHvxqexQKY77ciUrpbxgw-7otn4--w2K51VpRmUKearZfAXkO0Hnl0f
 radicle:
    security:
       enable-csrf: false
    mongo:
       mongoIp: mongodb://mongodb
       mongoPort: 27017
-      mongoDbName: assets
+      mongoDbName: mesh
+   stx-mining:
+      mining-path: http://monitor.stxmining.xyz/mining_info
+   binance:
+      rate-path: https://api.binance.com/api/v3/ticker/24hr
+      fiat-list: GBP,USD,EUR,AUD,JPY,HKD
+   ticker:
+      rate-path: https://blockchain.info/ticker
+   btcfee:
+      fee-rate: https://bitcoinfees.earn.com/api/v1/fees/recommended
+      fee-list: https://bitcoinfees.earn.com/api/v1/fees/list
    stax:
       base-path: http://docker.for.mac.localhost:20443
       sidecar-path: http://docker.for.mac.localhost:3999
@@ -60,6 +78,14 @@ spring:
 application:
    mongoIp: mongodb://mongodb
    mongoPort: 27017
+squareup:
+   api:
+      applicationName: rpay-prom
+      locationId: LA14YJ0CQM53A
+      redirectUrl: https://tapi.risidio.com/mesh/oauth-redirect
+      applicationId: sandbox-sq0idb-B8CL6u-_2GdwAvkgg6M7WA
+      applicationSecret: sandbox-sq0csb-jA9NywqltQkVpYSLdlPLUybKgti8V4PvoDw6yZnwG0o
+      accessToken: EAAAENUG4tHvxqexQKY77ciUrpbxgw-7otn4--w2K51VpRmUKearZfAXkO0Hnl0f
 radicle:
    stax:
       base-path: http://139.162.204.44:20443
@@ -72,6 +98,14 @@ spring:
 application:
    mongoIp: mongodb://mongodb
    mongoPort: 27017
+squareup:
+   api:
+      applicationName: rpay-prom
+      locationId: L5KB1246S89CC
+      redirectUrl: https://api.risidio.com/mesh/oauth-redirect
+      applicationId: sq0idp-atqzv2bIG-qh6zGPPv0qwg
+      applicationSecret: sq0csp-0bpVacayvI_wAs9pEIVDWJckSLpMW1YlaQu-eLA904g
+      accessToken: EAAAEOvHxJdmyLw1GLmuvmH6dpt6--rEWjsao-as4IGkYmDrx-i2kyB-V3aDe25R
 radicle:
    stax:
       base-path: http://178.79.138.62:20443

@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.radicle.mesh.service.CloudinarySettings;
-import com.radicle.mesh.service.domain.CloudinaryConfig;
+import com.radicle.mesh.service.cloudinary.CloudinarySettings;
+import com.radicle.mesh.service.cloudinary.domain.CloudinaryConfig;
 
 @RestController
 @CrossOrigin(origins = { "*" }, maxAge = 6000)

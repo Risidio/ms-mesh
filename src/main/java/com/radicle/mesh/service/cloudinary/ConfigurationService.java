@@ -1,8 +1,8 @@
-package com.radicle.mesh.service;
+package com.radicle.mesh.service.cloudinary;
 
 import java.util.Optional;
 
-import com.radicle.mesh.service.domain.Configuration;
+import com.radicle.mesh.service.cloudinary.domain.Configuration;
 
 
 public interface ConfigurationService

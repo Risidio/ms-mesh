@@ -1,4 +1,4 @@
-package com.radicle.mesh.service.domain;
+package com.radicle.mesh.service.cloudinary.domain;
 
 import java.io.Serializable;
 import java.util.UUID;

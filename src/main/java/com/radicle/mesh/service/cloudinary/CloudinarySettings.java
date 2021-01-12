@@ -1,4 +1,4 @@
-package com.radicle.mesh.service;
+package com.radicle.mesh.service.cloudinary;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
