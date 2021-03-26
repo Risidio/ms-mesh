@@ -20,7 +20,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @AllArgsConstructor
-@TypeAlias(value = "FeeRate")
+@TypeAlias(value = "StacksResponse")
 public class FeeRate {
 
 	private String feeName;

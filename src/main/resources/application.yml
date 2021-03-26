@@ -34,6 +34,8 @@ radicle:
    stax:
       base-path: http://docker.for.mac.localhost:20443
       sidecar-path: http://docker.for.mac.localhost:3999
+      admin-contract-address: ST1ESYCGJB5Z5NBHS39XPC70PGC14WAQK5XXNQYDW
+      admin-contract-name: appmap
 cloudinary:
    cloudName: mijo-enterprises
    baseDeliveryUrl: http://res.cloudinary.com/mijo-enterprises

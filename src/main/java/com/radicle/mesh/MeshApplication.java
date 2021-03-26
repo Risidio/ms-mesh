@@ -20,6 +20,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.radicle.mesh.api.model.stxbuffer.ClarityDeserialiser;
+import com.radicle.mesh.api.model.stxbuffer.ClaritySerialiser;
+import com.radicle.mesh.api.model.stxbuffer.ContractReader;
+import com.radicle.mesh.api.model.stxbuffer.types.AppMapContract;
 import com.squareup.square.SquareClient;
 
 @SpringBootApplication
@@ -58,6 +62,26 @@ public class MeshApplication {
 	@Bean
 	public RestOperations restTemplate() {
 		return createRestTemplate();
+	}
+
+	@Bean
+	public ContractReader contractReader() {
+		return new ContractReader();
+	}
+
+	@Bean
+	public AppMapContract contractData() {
+		return new AppMapContract();
+	}
+
+	@Bean
+	public ClaritySerialiser claritySerialiser() {
+		return new ClaritySerialiser();
+	}
+
+	@Bean
+	public ClarityDeserialiser clarityDeserialiser() {
+		return new ClarityDeserialiser();
 	}
 
 	public static RestTemplate createRestTemplate() {

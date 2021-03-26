@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,8 +58,13 @@ public class OpenNodeController {
 	@PostMapping(value = "/v2/checkPayment/{paymentId}")
 	public String checkPayment(HttpServletRequest request, @PathVariable String paymentId) {
 		String url = apiEndpoint +  "/v1/charge/" + paymentId;
-		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(getHeaders()), String.class);
-		return response.getBody();
+		try {
+			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(getHeaders()), String.class);
+			return response.getBody();
+		} catch (RestClientException e) {
+			logger.error("No payment for paymentId: " + url + " Error: " + e.getMessage());
+			return null;
+		}
 	}
 
 	@PostMapping(value = "/v2/charge/callback")

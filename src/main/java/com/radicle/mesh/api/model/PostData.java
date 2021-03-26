@@ -3,6 +3,7 @@ package com.radicle.mesh.api.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -11,12 +12,10 @@ import lombok.ToString;
 @Builder
 @ToString
 @AllArgsConstructor
-public class ReadContractParameters {
+@NoArgsConstructor
+public class PostData {
 
 	private String sender;
 	private String[] arguments;
 
-	public ReadContractParameters() {
-		super();
-	}
 }

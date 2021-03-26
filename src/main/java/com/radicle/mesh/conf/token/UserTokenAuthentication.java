@@ -122,7 +122,7 @@ public class UserTokenAuthentication {
 		long expiry = expirationTime.getTime();
 		long nowish = new Date().getTime();
 		if (nowish > expiry) {
-			throw new RuntimeException("Token has expired.");
+			throw new RuntimeException("TokenContract has expired.");
 		}
 	}
 

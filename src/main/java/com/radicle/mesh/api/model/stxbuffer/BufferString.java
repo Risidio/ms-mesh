@@ -1,4 +1,6 @@
-package com.radicle.mesh.api.model;
+package com.radicle.mesh.api.model.stxbuffer;
+
+import org.springframework.data.annotation.TypeAlias;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +15,9 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Principal {
-
-	public String httpMethod;
-	private String path;
-	private PostData postData;
-
+@TypeAlias(value = "ClarityType")
+public class BufferString {
+	String contentBuffer;
+	String hexBuffer;
+	
 }
