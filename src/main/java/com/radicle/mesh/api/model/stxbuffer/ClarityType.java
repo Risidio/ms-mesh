@@ -23,6 +23,10 @@ public class ClarityType {
 	private Object value;
 	private Object valueHex;
 	
+	public ClarityType(int type) {
+		super();
+		this.type = type;
+	}
 	public ClarityType(int type, Object value) {
 		super();
 		this.type = type;

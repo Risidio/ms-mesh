@@ -24,6 +24,8 @@ import lombok.ToString;
 public class Application {
 	
 	private String contractId;
+	private String gaiaFilename;
+	private String owner;
 	private Long appIndex;
 	private int storageModel;
 	private int status;
@@ -36,8 +38,14 @@ public class Application {
 		ClarityType ct = (ClarityType) registry.get("status");
 		a.setStatus(((BigInteger)ct.getValue()).intValue());
 		
+		ct = (ClarityType) registry.get("owner");
+		a.setOwner((String)ct.getValueHex());
+		
 		ct = (ClarityType) registry.get("app-contract-id");
 		a.setContractId((String)ct.getValue());
+		
+		ct = (ClarityType) registry.get("gaia-filename");
+		a.setGaiaFilename((String)ct.getValue());
 		
 		return a;
 	}

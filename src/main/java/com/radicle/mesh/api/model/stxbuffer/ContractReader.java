@@ -78,7 +78,7 @@ public class ContractReader {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_APP;
 		String path = path(fname.getName());
 		for (long i = 0; i < appMapContract.getAppCounter(); i++) {
-			String arg1 = claritySerialiser.serialise(ClarityTypes.Int, BigInteger.valueOf(i));
+			String arg1 = claritySerialiser.serialiseInt(BigInteger.valueOf(i));
 			String response = readFromStacks(path, new String[] {arg1});
 			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
@@ -100,11 +100,17 @@ public class ContractReader {
 		String path = path(application.getContractId(), fname.getName());
 		TokenContract tokenContract = application.getTokenContract();
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
-			String arg1 = claritySerialiser.serialise(ClarityTypes.UInt, BigInteger.valueOf(index));
+			// BigInteger unsigned = ClaritySerialiser.convertTwosCompliment(BigInteger.valueOf(index));
+			String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
 			String response = readFromStacks(path, new String[] {arg1});
 			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-			Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
-			tokenContract.addToken(token);
+			if (data != null) {
+				Map<String, Object> data1 = (Map)data.get(fname.getName());
+				if (data1 != null) {
+	 				Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
+					tokenContract.addToken(token);
+				}
+			}
 		}
 	}
 

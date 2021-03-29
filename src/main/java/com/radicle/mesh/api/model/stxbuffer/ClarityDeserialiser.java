@@ -88,7 +88,7 @@ public class ClarityDeserialiser {
 				} else if (type == ClarityTypes.PrincipalContract) {
 					return readPrincipalContract(ctype, buf);
 				} else if (type == ClarityTypes.OptionalNone) {
-					return readUInt(ctype, buf);
+					return new ClarityType(ctype);
 				} else if (type == ClarityTypes.OptionalSome) {
 					int next = Byte.toUnsignedInt(buf.get());
 					return deserializeCV(next, buf);
@@ -193,9 +193,13 @@ public class ClarityDeserialiser {
 		
 	private ClarityType readUInt(int ctype, ByteBuffer buf) {
 		byte[] bytes2 = new byte[16];
-		buf.get(bytes2).array();
-		//return new ClarityType(ctype, ClaritySerialiser.convertTwosCompliment(new BigInteger(bytes2)));
-		return new ClarityType(ctype, new BigInteger(bytes2));
+		if ((buf.limit() - buf.position()) >= 16) {
+			buf.get(bytes2).array();
+			//return new ClarityType(ctype, ClaritySerialiser.convertTwosCompliment(new BigInteger(bytes2)));
+			return new ClarityType(ctype, new BigInteger(bytes2));
+		}
+
+		return null;
 	}
 	
 	private ClarityType readInt(int ctype, ByteBuffer buf) {

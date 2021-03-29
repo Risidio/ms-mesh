@@ -24,34 +24,91 @@ import lombok.ToString;
 @TypeAlias(value = "ClaritySerialiser")
 public class ClaritySerialiser {
 
-	@Autowired private ObjectMapper mapper;
+	@Autowired
+	private ObjectMapper mapper;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
-	public String serialise(ClarityTypes type, BigInteger appCounter) {
-	    
-	    byte[] bytesValue = convertTwosCompliment(appCounter).toByteArray();
-		ByteBuffer bufferValue = ByteBuffer.allocate(16);
-		bufferValue.asIntBuffer();
-		bufferValue.put(bytesValue);
-
-	    byte[] bytesValue1 = appCounter.toByteArray();
-		ByteBuffer bufferValue1 = ByteBuffer.allocate(16);
-		bufferValue1.asIntBuffer();
-		bufferValue1.put(bytesValue1);
-		
-		byte byteType = Integer.valueOf(type.ordinal()).byteValue();
-		ByteBuffer bufferType = ByteBuffer.allocate(1);
-		bufferType.put(byteType);
-		bufferType.flip();
-		
-		ByteBuffer bufferCombo = combineBuffers(bufferType, bufferValue);
-		String bufferComboString = asHex(combineBuffers(bufferType, bufferValue));
-		ByteBuffer bufferCombo1 = combineBuffers(bufferType, bufferValue1);
-		return ("0x" + asHex(bufferCombo1));
-		//  return = Hex.encode(bufferCombo1.array(/* charset */));
+	public String serialiseInt(BigInteger appCounter) {
+		String s1 = String.format("%032x", appCounter);
+		s1 = "0x00" + s1;
+		return s1;
 	}
 	
+	public String serialiseUInt(BigInteger appCounter) {
+		String s1 = String.format("%032x", appCounter);
+		s1 = "0x01" + s1;
+		return s1;
+	}
+
+		
+//		byte[] bytesValue = convertTwosCompliment(appCounter).toByteArray();
+//		ByteBuffer bufferValue = ByteBuffer.allocate(16);
+//		bufferValue.put(bytesValue);
+//		byte[] val = appCounter.toByteArray();
+//		for (int i=val.length-1; i>=0; i--) {
+//			bufferValue.put(val[i]);
+//		}
+		// bufferValue.flip(); 0100000000000000000000000000000001
+
+//	    byte[] bytesValue1 = appCounter.toByteArray();
+//		ByteBuffer bufferValue1 = ByteBuffer.allocate(16);
+//		bufferValue1.asIntBuffer();
+//		bufferValue1.put(bytesValue1);
+
+//		byte byteType = Integer.valueOf(0).byteValue();
+//		ByteBuffer bufferType = ByteBuffer.allocate(1);
+//		bufferType.asIntBuffer();
+//		bufferType.put(byteType);
+//		bufferType.flip();
+
+//		ByteBuffer bufferCombo = combineBuffers(bufferType, bufferValue);
+//		String bufferComboString = asHex(combineBuffers(bufferType, bufferValue));
+//		ByteBuffer buf = ByteBuffer.allocate(17);
+//		buf.put(b2.array());
+//		buf.put(bufferType);
+//		// byte ct = buf.get();
+//		return ("0x" + asHex(buf));
+		// return ("0x" + buf.asCharBuffer());
+		// return = Hex.encode(bufferCombo1.array(/* charset */));
+//	}
+
+//	public String serialiseUInt(BigInteger appCounter) {
+//
+//		if (appCounter.compareTo(BigInteger.ZERO) < 0) {
+//			appCounter = appCounter.add(BigInteger.ONE.shiftLeft(64));
+//		}
+//
+////	    byte[] bytesValue = convertTwosCompliment(appCounter).toByteArray();
+////		ByteBuffer bufferValue = ByteBuffer.allocate(16);
+////		bufferValue.asIntBuffer();
+////		bufferValue.put(bytesValue);
+//
+//		byte[] bytesValue1 = appCounter.toByteArray();
+//		ByteBuffer bufferValue1 = ByteBuffer.allocate(16);
+//		bufferValue1.asIntBuffer();
+//		bufferValue1.put(bytesValue1);
+//
+//		byte byteType = Integer.valueOf(1).byteValue();
+//		ByteBuffer bufferType = ByteBuffer.allocate(1);
+//		bufferType.put(byteType);
+//		bufferType.flip();
+//
+//		ByteBuffer bufferCombo = combineBuffers(bufferType, bufferValue1);
+//		String bufferComboString = asHex(combineBuffers(bufferType, bufferValue1));
+//		ByteBuffer bufferCombo1 = combineBuffers(bufferType, bufferValue1);
+//		return ("0x" + asHex(bufferCombo1));
+//		// return = Hex.encode(bufferCombo1.array(/* charset */));
+//	}
+
 	private String asHex(ByteBuffer bb) {
+//		byte[] bytes = bb.array();
+//	    char[] hexChars = new char[bytes.length * 2];
+//	    for (int j = 0; j < bytes.length; j++) {
+//	        int v = bytes[j] & 0xFF;
+//	        hexChars[j * 2] = HEX_CHARS[v >>> 4];
+//	        hexChars[j * 2 + 1] = HEX_CHARS[v & 0x0F];
+//	    }
+//	    return new String(hexChars);
 		byte[] buf = bb.array();
 	    char[] chars = new char[2 * buf.length];
 	    for (int i = 0; i < buf.length; ++i)
@@ -63,23 +120,28 @@ public class ClaritySerialiser {
     }
 
 	public static BigInteger convertTwosCompliment(BigInteger appCounter) {
-	    byte[] contents = appCounter.toByteArray();
+		if (appCounter.signum() == 1) {
+			byte[] contents = appCounter.toByteArray();
 
-	    // prepend byte of opposite sign
-	    byte[] result = new byte[contents.length + 1];
-	    System.arraycopy(contents, 0, result, 1, contents.length);
-	    result[0] = (contents[0] < 0) ? 0 : (byte)-1;
+			// prepend byte of opposite sign
+			byte[] result = new byte[contents.length + 1];
+			System.arraycopy(contents, 0, result, 1, contents.length);
+			result[0] = (contents[0] < 0) ? 0 : (byte) -1;
 
-	    // this will be two's complement
-	    BigInteger result2 = new BigInteger(result);
-	    return result2;
+			// this will be two's complement
+			BigInteger result2 = new BigInteger(result);
+			byte[] dd = result2.toByteArray();
+			return result2;
+		} else {
+			return appCounter;
+		}
 	}
-	
+
 	private ByteBuffer combineBuffers(ByteBuffer bufType, ByteBuffer bufValue) {
-	    int length = bufType.limit() + bufValue.limit();
+		int length = bufType.capacity() + bufValue.capacity();
 		ByteBuffer buffer = ByteBuffer.allocate(length);
 		buffer.put(bufType);
 		buffer.put(bufValue);
-	    return buffer;
+		return buffer;
 	}
 }

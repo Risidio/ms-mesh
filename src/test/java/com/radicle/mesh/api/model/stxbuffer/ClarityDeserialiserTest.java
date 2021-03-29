@@ -99,6 +99,8 @@ class ClarityDeserialiserTest {
 			assertTrue(ctMap.size() == 4);
 			ct = (ClarityType)ctMap.get("owner");
 			assertTrue( ((String)ct.getValue()).equals("radicle_art.id.blockstack"));
+			ct = (ClarityType)ctMap.get("gaia-filename");
+			assertTrue( ((String)ct.getValue()).equals("items_v003.json"));
 			ct = (ClarityType)ctMap.get("app-contract-id");
 			assertTrue( ((String)ct.getValue()).equals("ST1ESYCGJB5Z5NBHS39XPC70PGC14WAQK5XXNQYDW.loopbomb-v1"));
 			ct = (ClarityType)ctMap.get("status");

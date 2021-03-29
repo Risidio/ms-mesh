@@ -58,23 +58,49 @@ public class Token {
 		ct = (ClarityType)map.get("transferCounter");
 		t.transferCounter = ((BigInteger)ct.getValue()).longValue();
 
-		Map<String, Object> info = (Map)map.get("tokenInfo");
-		t.tokenInfo = info;
+		Map<String, Object> info = null;
 
-		info = (Map)map.get("offers");
-		t.offers = info;
+		try {
+			info = (Map)map.get("tokenInfo");
+			t.tokenInfo = info;
+		} catch (Exception e1) {
+			// empty map
+		}
 
-		info = (Map)map.get("saleData");
-		t.saleData = info;
+		try {
+			info = (Map)map.get("offers");
+			t.offers = info;
+		} catch (Exception e) {
+			// empty map
+		}
 
-		info = (Map)map.get("bidHistory");
-		t.bidHistory = info;
+		try {
+			info = (Map)map.get("saleData");
+			t.saleData = info;
+		} catch (Exception e) {
+			// empty map
+		}
 
-		info = (Map)map.get("transferMap");
-		t.transferMap = info;
+		try {
+			info = (Map)map.get("bidHistory");
+			t.bidHistory = info;
+		} catch (Exception e) {
+			// empty map
+		}
 
-		info = (Map)map.get("transferHistoryMap");
-		t.transferHistoryMap = info;
+		try {
+			info = (Map)map.get("transferMap");
+			t.transferMap = info;
+		} catch (Exception e) {
+			// empty map
+		}
+
+		try {
+			info = (Map)map.get("transferHistoryMap");
+			t.transferHistoryMap = info;
+		} catch (Exception e) {
+			// empty map
+		}
 
 		return t;
 	}
