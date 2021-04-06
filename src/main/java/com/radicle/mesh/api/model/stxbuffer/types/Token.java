@@ -1,6 +1,7 @@
 package com.radicle.mesh.api.model.stxbuffer.types;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.TypeAlias;
@@ -23,24 +24,23 @@ import lombok.ToString;
 @TypeAlias(value = "Token")
 public class Token {
 	
-	private Long tokenIndex;
 	private Long nftIndex;
 	private Long offerCounter;
 	private Long bidCounter;
 	private Long editionCounter;
 	private Long transferCounter;
-	private Map<String, Object> saleData;
-	private Map<String, Object> bidHistory;
+	private SaleData saleData;
+	private TokenInfo tokenInfo;
+	private List<Offer> offerHistory;
+	private List<Bid> bidHistory;
+	private String owner;
 	private Map<String, Object> transferMap;
 	private Map<String, Object> transferHistoryMap;
-	private Map<String, Object> tokenInfo;
-	private Map<String, Object> offers;
-	private String owner;
 	
 	public static Token fromMap(long tokenIndex, Map<String, Object> map) {
 		
 		Token t = new Token();
-		t.tokenIndex = tokenIndex;
+		t.nftIndex = tokenIndex;
 		t.owner = (String) ((ClarityType)map.get("owner")).getValueHex();
 
 		ClarityType ct = (ClarityType)map.get("nftIndex");
@@ -62,28 +62,16 @@ public class Token {
 
 		try {
 			info = (Map)map.get("tokenInfo");
-			t.tokenInfo = info;
+			TokenInfo sd = TokenInfo.fromMap(info);
+			t.tokenInfo = sd;
 		} catch (Exception e1) {
 			// empty map
 		}
 
 		try {
-			info = (Map)map.get("offers");
-			t.offers = info;
-		} catch (Exception e) {
-			// empty map
-		}
-
-		try {
 			info = (Map)map.get("saleData");
-			t.saleData = info;
-		} catch (Exception e) {
-			// empty map
-		}
-
-		try {
-			info = (Map)map.get("bidHistory");
-			t.bidHistory = info;
+			SaleData sd = SaleData.fromMap(info);
+			t.saleData = sd;
 		} catch (Exception e) {
 			// empty map
 		}

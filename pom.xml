@@ -122,6 +122,17 @@
 			<artifactId>smart-buffer</artifactId>
 			<version>1.4.3.rc-8</version>
 		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.mandrillapp.wrapper.lutung</groupId> -->
+<!-- 			<artifactId>lutung</artifactId> -->
+<!-- 			<version>0.0.8</version> -->
+<!-- 		</dependency> -->
+		<!-- https://mvnrepository.com/artifact/com.sendinblue/sib-api-v3-sdk -->
+		<dependency>
+			<groupId>com.sendinblue</groupId>
+			<artifactId>sib-api-v3-sdk</artifactId>
+			<version>5.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

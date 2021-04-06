@@ -1,6 +1,12 @@
 package com.radicle.mesh.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +36,8 @@ import com.radicle.mesh.api.model.Principal;
 import com.radicle.mesh.api.model.Shaker;
 import com.radicle.mesh.api.model.stxbuffer.ContractReader;
 import com.radicle.mesh.api.model.stxbuffer.types.AppMapContract;
+import com.radicle.mesh.api.model.stxbuffer.types.Application;
+import com.radicle.mesh.api.model.stxbuffer.types.Token;
 
 @RestController
 @EnableAsync
@@ -44,18 +53,93 @@ public class StaxController {
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ContractReader contractReader;
 	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
-	private AppMapContract appMapContract;
+	private Set<String> contractIds = new HashSet<>();
+	private Map<String, Set<String>> contractIdNftIndexes = new HashMap<>();
 
-	@Scheduled(fixedDelay=10000)
+	@Scheduled(fixedDelay=120000)
 	public void pushData() throws JsonProcessingException {
-		this.appMapContract = contractReader.read();
-		simpMessagingTemplate.convertAndSend("/queue/contract-news", appMapContract);
+		AppMapContract registry = contractReader.read();
+		simpMessagingTemplate.convertAndSend("/queue/contract-news", registry);
 	}
 
+	@Scheduled(fixedDelay=10000)
+	public void pushDataAboutContract() throws JsonProcessingException {
+		AppMapContract registry = contractReader.read();
+		for (String contractId : contractIds) {
+			contractReader.read(registry, contractId);
+			Application application = getApplication(contractId);
+			if (application != null) {
+				List<Application> apps = new ArrayList<Application>();
+				apps.add(application);
+				registry.setApplications(apps);
+				simpMessagingTemplate.convertAndSend("/queue/contract-news-" + contractId, registry);
+			}
+		}
+	}
+	
+	@Scheduled(fixedDelay=10000)
+	public void pushDataAboutNft() throws JsonProcessingException {
+		AppMapContract registry = contractReader.read();
+		for (String contractId : contractIdNftIndexes.keySet()) {
+			Set<String> hashes = contractIdNftIndexes.get(contractId);
+			for (String hash : hashes) {
+				Token t = contractReader.read(registry, contractId, hash);
+				if (t != null) {
+					simpMessagingTemplate.convertAndSend("/queue/contract-news-" + contractId + "-" + hash, t);
+				}
+			}
+		}
+	}
+	
+	private Application getApplication(String contractId) {
+		AppMapContract appMapContract = contractReader.getRegistry();
+		if (appMapContract == null) return null;
+		Application application = null;
+		for (Application a : appMapContract.getApplications()) {
+			if (a.getContractId().contentEquals(contractId)) {
+				application = a;
+			}
+		}
+		return application;
+	}
+
+	private Token getToken(String contractId, String assetHash) {
+		AppMapContract appMapContract = contractReader.getRegistry();
+		if (appMapContract == null) return null;
+		Token token = null;
+		for (Application a : appMapContract.getApplications()) {
+			if (a.getContractId().contentEquals(contractId)) {
+				for (Token t : a.getTokenContract().getTokens()) {
+					if (t.getTokenInfo().getAssetHash().equals(assetHash)) {
+						token = t;
+					}
+				}
+			}
+		}
+		return token;
+	}
 
 	@GetMapping(value = "/v2/appmap")
 	public AppMapContract appmap(HttpServletRequest request) {
-		return appMapContract;
+		return contractReader.getRegistry();
+	}
+
+	@GetMapping(value = "/v2/appmap/{contractId}")
+	public AppMapContract appmap(HttpServletRequest request, @PathVariable String contractId) {
+		AppMapContract registry = contractReader.getRegistry();
+		contractIds.add(contractId);
+		List<Application> apps = new ArrayList<Application>();
+		apps.add(getApplication(contractId));
+		registry.setApplications(apps);
+		return registry;
+	}
+
+	@GetMapping(value = "/v2/register/{contractId}/{assetHash}")
+	public Token register(HttpServletRequest request, @PathVariable String contractId, @PathVariable String assetHash) {
+		Set<String> indexes = contractIdNftIndexes.get(contractId);
+		indexes.add(assetHash);
+		contractIdNftIndexes.put(contractId, indexes);
+		return getToken(contractId, assetHash);
 	}
 
 	@PostMapping(value = "/v1/shaker")
@@ -109,7 +193,7 @@ public class StaxController {
 	@PostMapping(value = "/v2/clarity")
 	public Principal clarity(HttpServletRequest request, @RequestBody Principal principal) {
 
-		System.out.println("StaxController.clarity()");
+		System.out.println("RegistrationController.clarity()");
 		return principal;
 	}
 

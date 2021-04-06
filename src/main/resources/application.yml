@@ -10,6 +10,12 @@ opennode:
    api:
       apiEndpoint: https://dev-api.opennode.com
       appEndpoint: https://dev.opennode.com
+sendinblue:
+   api:
+      key: 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
+mandrill:
+   api:
+      key: 9Pk36qtppNlJeeWdqClyeQ
 squareup:
    api:
       applicationName: rpay-prom
