@@ -70,9 +70,11 @@ public class ContractReader {
 		readAppMap(appMapContract, adminContractAddress + "." + adminContractName, ReadOnlyFunctionNames.GET_CONTRACT_DATA);
 		readApplications(appMapContract);
 		List<Application> applications = appMapContract.getApplications();
-		for (Application application : applications) {
-			readTokenContract(application);
-			readTokens(application);
+		if (applications != null) {
+			for (Application application : applications) {
+				readTokenContract(application);
+				readTokens(application);
+			}
 		}
 		registry = appMapContract;
 		return registry;
@@ -193,7 +195,8 @@ public class ContractReader {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_HASH;
 		// String arg1 = claritySerialiser.serialiseUInt(assetHash);
 		String path = path(application.getContractId(), fname.getName());
-		String response = readFromStacks(path, new String[] {assetHash});
+		String arg1 = claritySerialiser.serialiseHexString(assetHash);
+		String response = readFromStacks(path, new String[] { arg1 });
 		Token t = null;
 		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 		if (data != null) {

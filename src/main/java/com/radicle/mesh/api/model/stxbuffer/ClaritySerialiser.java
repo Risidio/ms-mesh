@@ -28,6 +28,57 @@ public class ClaritySerialiser {
 	private ObjectMapper mapper;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
+	public String serialiseHexString(String hexString) {
+		byte[] b = hexStringToByteArray(hexString);
+		Integer[] output = new Integer[hexString.getBytes().length / 2];
+		int counter = 0;
+		for (byte by : b) {
+			if (counter == output.length) break;
+			Integer number = by & 0xff;
+			output[counter] = number;
+			counter++;
+		}
+		int[] output1 = new int[ (hexString.getBytes().length / 2) + 5];
+		output1[0] = 2;
+		output1[1] = 0;
+		output1[2] = 0;
+		output1[3] = 0;
+		output1[4] = hexString.getBytes().length / 2;
+		counter = 5;
+		for (Integer number : output) {
+			output1[counter] = number;
+			counter++;
+		}
+		String content = convertToHex(output1);
+		return "0x" + content;
+	}
+	
+	public static long getUnsignedInt(int x) {
+	    if(x > 0) return x;
+	    long res = (long)(Math.pow(2, 32)) + x;
+	    return res;
+	}
+	
+    public static String convertToHex(int[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (int aByte : bytes) {
+            result.append(String.format("%02x", aByte));
+            // upper case
+            // result.append(String.format("%02X", aByte));
+        }
+        return result.toString();
+    }
+
+	public byte[] hexStringToByteArray(String s) {
+	    int len = s.length();
+	    byte[] data = new byte[len / 2];
+	    for (int i = 0; i < len; i += 2) {
+	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+	                             + Character.digit(s.charAt(i+1), 16));
+	    }
+	    return data;
+	}
+
 	public String serialiseInt(BigInteger appCounter) {
 		String s1 = String.format("%032x", appCounter);
 		s1 = "0x00" + s1;

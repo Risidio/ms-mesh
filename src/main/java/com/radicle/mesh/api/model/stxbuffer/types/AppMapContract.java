@@ -20,18 +20,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @TypeAlias(value = "AppMapContract")
 public class AppMapContract {
-	private List<Application> applications = new ArrayList();
+	private List<Application> applications;
 	private String administrator;
 	private long appCounter;
 	
 	public void addApplication(Application application) {
+		if (this.applications == null) {
+			this.applications = new ArrayList<>();
+		}
 		applications.add(application);
 	}
 	
 	public List<Application> getApplications() {
-		if (this.applications == null) {
-			this.applications = new ArrayList();
-		}
 		return this.applications;
 	}
 }

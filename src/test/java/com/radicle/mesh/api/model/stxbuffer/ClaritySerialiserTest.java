@@ -17,8 +17,17 @@ class ClaritySerialiserTest {
 	     // 0x00000000000000000000000000000007d0
 	     // 0x00000000000000000000000000000007d0
 	     // 0x01000000000000000000000000001e8480
+	
+	private String serialed = "0x02000000201c0b7b80e72eebf0f60a3ba6c53a99ba7bd5ef2ac4fec3be3e659fd1d6a1b44b"; 
+	
 	static ClaritySerialiser cs = new ClaritySerialiser();
 	ClarityType ct = null;
+
+	@Test
+	void test_getSerialisedHash() {
+		String arg1 = cs.serialiseHexString("1c0b7b80e72eebf0f60a3ba6c53a99ba7bd5ef2ac4fec3be3e659fd1d6a1b44b");
+		assertTrue(arg1.equals(serialed));
+	}
 
 	@Test
 	void test_getSerialisedInt() {
