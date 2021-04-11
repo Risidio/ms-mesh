@@ -68,7 +68,7 @@ public class TokenContract {
 		if (tokens == null) {
 			tokens = new ArrayList();
 		}
-		tokens.add(token);
+		if (token != null) tokens.add(token);
 	}
 
 }

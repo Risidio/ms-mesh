@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.radicle.mesh.api.model.stxbuffer.ClarityDeserialiser;
 import com.radicle.mesh.api.model.stxbuffer.ClaritySerialiser;
 import com.radicle.mesh.api.model.stxbuffer.ContractReader;
+import com.radicle.mesh.api.model.stxbuffer.GaiaHubReader;
 import com.radicle.mesh.api.model.stxbuffer.types.AppMapContract;
 import com.squareup.square.SquareClient;
 
@@ -62,6 +63,11 @@ public class MeshApplication {
 	@Bean
 	public RestOperations restTemplate() {
 		return createRestTemplate();
+	}
+
+	@Bean
+	public GaiaHubReader gaiaHubReader() {
+		return new GaiaHubReader();
 	}
 
 	@Bean

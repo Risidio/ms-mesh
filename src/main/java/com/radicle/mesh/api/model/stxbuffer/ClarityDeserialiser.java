@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -32,6 +34,7 @@ import lombok.ToString;
 @TypeAlias(value = "ClarityDeserialiser")
 public class ClarityDeserialiser {
 
+    private static final Logger logger = LogManager.getLogger(ClarityDeserialiser.class);
 	@Autowired private ObjectMapper mapper;
 
 	public Map<String, Object> deserialise(String mapKey, String jsonResp) throws JsonMappingException, JsonProcessingException {
@@ -50,6 +53,7 @@ public class ClarityDeserialiser {
 			while (remaining) {
 				data.put(mapKey, deserializeCV(okay, buf));
 				if (okay > ClarityTypes.values().length) {
+					logger.warn("Clarity type overrun at " + buf.position());
 					throw new RuntimeException("Clarity value overrun..");
 				}
 				remaining = buf.hasRemaining();

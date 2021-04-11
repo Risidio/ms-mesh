@@ -23,6 +23,8 @@ squareup:
 radicle:
    security:
       enable-csrf: false
+   gaia:
+      huburl: https://core.blockstack.org/v1/users/
    mongo:
       mongoIp: mongodb://mongodb
       mongoPort: 27017

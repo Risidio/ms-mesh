@@ -23,6 +23,7 @@ import lombok.ToString;
 @TypeAlias(value = "Offer")
 public class Offer {
 
+	private Integer accepted;
 	private String offerer;
 	private Integer saleCycle;
 	private Long madeDate;
@@ -31,11 +32,9 @@ public class Offer {
 	public static Offer fromMap(Map<String, Object> map) {
 		
 		Offer sd = new Offer();
-
 		try {
-
 			ClarityType ct = (ClarityType)map.get("offerer");
-			sd.setOfferer((String) ((ClarityType)map.get("owner")).getValueHex());
+			sd.setOfferer((String) ct.getValueHex());
 
 			ct = (ClarityType)map.get("amount");
 			sd.setAmount(((BigInteger)ct.getValue()).longValue());
@@ -46,10 +45,12 @@ public class Offer {
 			ct = (ClarityType)map.get("sale-cycle");
 			sd.setSaleCycle(((BigInteger)ct.getValue()).intValue());
 
-		} catch (Exception e) {
-			// empty map
-		}
+			ct = (ClarityType)map.get("accepted");
+			sd.setAccepted(((BigInteger)ct.getValue()).intValue());
 
+		} catch (Exception e) {
+			return null;
+		}
 		return sd;
 	}
 

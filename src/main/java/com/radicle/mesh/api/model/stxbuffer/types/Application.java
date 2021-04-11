@@ -24,6 +24,7 @@ import lombok.ToString;
 public class Application {
 	
 	private String contractId;
+	private String appOrigin;
 	private String gaiaFilename;
 	private String owner;
 	private Long appIndex;
@@ -35,17 +36,24 @@ public class Application {
 		
 		Application a = new Application();
 		a.setAppIndex(appIndex);
-		ClarityType ct = (ClarityType) registry.get("status");
-		a.setStatus(((BigInteger)ct.getValue()).intValue());
-		
-		ct = (ClarityType) registry.get("owner");
-		a.setOwner((String)ct.getValueHex());
-		
-		ct = (ClarityType) registry.get("app-contract-id");
-		a.setContractId((String)ct.getValue());
-		
-		ct = (ClarityType) registry.get("gaia-filename");
-		a.setGaiaFilename((String)ct.getValue());
+		try {
+			ClarityType ct = (ClarityType) registry.get("status");
+			a.setStatus(((BigInteger)ct.getValue()).intValue());
+			
+			ct = (ClarityType) registry.get("owner");
+			a.setOwner((String)ct.getValueHex());
+			
+			ct = (ClarityType) registry.get("app-contract-id");
+			a.setContractId((String)ct.getValue());
+			
+			ct = (ClarityType) registry.get("app-origin");
+			a.setAppOrigin((String)ct.getValue());
+			
+			ct = (ClarityType) registry.get("gaia-filename");
+			a.setGaiaFilename((String)ct.getValue());
+		} catch (Exception e) {
+			return null;
+		}
 		
 		return a;
 	}

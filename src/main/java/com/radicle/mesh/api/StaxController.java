@@ -56,7 +56,12 @@ public class StaxController {
 	private Set<String> contractIds = new HashSet<>();
 	private Map<String, Set<String>> contractIdNftIndexes = new HashMap<>();
 
-	@Scheduled(fixedDelay=360000)
+//    @PostConstruct
+//    public void init() throws JsonProcessingException {
+//    	contractReader.read();
+//    }
+
+	@Scheduled(fixedDelay=3600000)
 	public void pushData() throws JsonProcessingException {
 		AppMapContract registry = contractReader.read();
 		simpMessagingTemplate.convertAndSend("/queue/contract-news", registry);
@@ -77,7 +82,7 @@ public class StaxController {
 		}
 	}
 	
-	@Scheduled(fixedDelay=10000)
+	@Scheduled(fixedDelay=5000)
 	public void pushDataAboutNft() throws JsonProcessingException {
 		AppMapContract registry = contractReader.getRegistry();
 		for (String contractId : contractIdNftIndexes.keySet()) {
@@ -126,9 +131,17 @@ public class StaxController {
 		return contractReader.getRegistry();
 	}
 
+	@GetMapping(value = "/v2/registrate")
+	public AppMapContract registrate(HttpServletRequest request) throws JsonProcessingException {
+		AppMapContract registry = contractReader.read();
+		return registry;
+	}
+
 	@GetMapping(value = "/v2/registry/{contractId}")
 	public AppMapContract appmap(HttpServletRequest request, @PathVariable String contractId) {
-		AppMapContract registry = contractReader.getRegistry();
+		AppMapContract registry = new AppMapContract();
+		registry.setAdministrator(contractReader.getRegistry().getAdministrator());
+		registry.setAppCounter(contractReader.getRegistry().getAppCounter());
 		Application application = getApplication(contractId);
 		if (application != null) {
 			contractIds.add(contractId);

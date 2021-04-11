@@ -152,7 +152,7 @@ public class ContractReader {
 			String response = readFromStacks(path, new String[] {arg1});
 			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
-			appMapContract.addApplication(a);
+			if (a != null) appMapContract.addApplication(a);
 		}
 	}
 
@@ -168,7 +168,8 @@ public class ContractReader {
 	private void readTokens(Application application) throws JsonMappingException, JsonProcessingException {
 		TokenContract tokenContract = application.getTokenContract();
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
-			tokenContract.addToken(readToken(application, index));
+			Token token = readToken(application, index);
+			if (token != null) tokenContract.addToken(token);
 		}
 	}
 	
@@ -178,15 +179,19 @@ public class ContractReader {
 		String path = path(application.getContractId(), fname.getName());
 		String response = readFromStacks(path, new String[] {arg1});
 		Token t = null;
-		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-		if (data != null) {
-			Map<String, Object> data1 = (Map)data.get(fname.getName());
-			if (data1 != null) {
- 				Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
-				token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
-				token.setBidHistory(readBids(application, index, token.getBidCounter()));
-				t = token;
+		try {
+			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
+			if (data != null) {
+				Map<String, Object> data1 = (Map)data.get(fname.getName());
+				if (data1 != null) {
+					Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
+					token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
+					token.setBidHistory(readBids(application, index, token.getBidCounter()));
+					t = token;
+				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
 		}
 		return t;
 	}
