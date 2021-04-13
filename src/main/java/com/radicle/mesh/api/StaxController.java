@@ -61,7 +61,7 @@ public class StaxController {
 //    	contractReader.read();
 //    }
 
-	@Scheduled(fixedDelay=3600000)
+	@Scheduled(fixedDelay=10000)
 	public void pushData() throws JsonProcessingException {
 		AppMapContract registry = contractReader.read();
 		simpMessagingTemplate.convertAndSend("/queue/contract-news", registry);
@@ -70,26 +70,28 @@ public class StaxController {
 	@Scheduled(fixedDelay=10000)
 	public void pushDataAboutContract() throws JsonProcessingException {
 		AppMapContract registry = contractReader.getRegistry();
+		if (registry == null) return;
+		AppMapContract registry1 = new AppMapContract();
+		registry1.setAdministrator(registry.getAdministrator());
+		registry1.setAppCounter(1);
 		for (String contractId : contractIds) {
-			contractReader.read(registry, contractId);
 			Application application = getApplication(contractId);
 			if (application != null) {
 				List<Application> apps = new ArrayList<Application>();
 				apps.add(application);
-				registry.setApplications(apps);
-				simpMessagingTemplate.convertAndSend("/queue/contract-news-" + contractId, registry);
+				registry1.setApplications(apps);
+				simpMessagingTemplate.convertAndSend("/queue/contract-news-" + contractId, registry1);
 			}
 		}
 	}
 	
 	@Scheduled(fixedDelay=5000)
 	public void pushDataAboutNft() throws JsonProcessingException {
-		AppMapContract registry = contractReader.getRegistry();
 		for (String contractId : contractIdNftIndexes.keySet()) {
 			Set<String> hashes = contractIdNftIndexes.get(contractId);
 			if (hashes != null) {
 				for (String hash : hashes) {
-					Token t = contractReader.read(registry, contractId, hash);
+					Token t = getToken(contractId, hash);
 					if (t != null) {
 						simpMessagingTemplate.convertAndSend("/queue/contract-news-" + contractId + "-" + hash, t);
 					}

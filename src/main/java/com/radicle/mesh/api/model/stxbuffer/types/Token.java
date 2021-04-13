@@ -31,6 +31,7 @@ public class Token {
 	private Long transferCounter;
 	private SaleData saleData;
 	private TokenInfo tokenInfo;
+	Map<String, List<ClarityType>> beneficiaries;
 	private List<Offer> offerHistory;
 	private List<Bid> bidHistory;
 	private String owner;
@@ -42,6 +43,11 @@ public class Token {
 		Token t = new Token();
 		t.nftIndex = tokenIndex;
 		t.owner = (String) ((ClarityType)map.get("owner")).getValueHex();
+
+		if (map.containsKey("beneficiaryData")) {
+			Map<String, List<ClarityType>> bene = (Map<String, List<ClarityType>>)map.get("beneficiaryData");
+			t.beneficiaries = bene;
+		}
 
 		ClarityType ct = (ClarityType)map.get("nftIndex");
 		t.nftIndex = ((BigInteger)ct.getValue()).longValue();

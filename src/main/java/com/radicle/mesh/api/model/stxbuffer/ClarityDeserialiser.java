@@ -97,7 +97,7 @@ public class ClarityDeserialiser {
 					int next = Byte.toUnsignedInt(buf.get());
 					return deserializeCV(next, buf);
 				} else if (type == ClarityTypes.List) {
-					return readUInt(ctype, buf);
+					return readList(ctype, buf);
 				} else if (type == ClarityTypes.Tuple) {
 					return readTuple(ctype, buf);
 				} else if (type == ClarityTypes.StringASCII) {
@@ -171,6 +171,17 @@ public class ClarityDeserialiser {
 //			tuple.put(key, clarityType);
 		}
 		return tuple;
+	}
+	
+	private List<ClarityType> readList(int ctype, ByteBuffer buf) {
+		List<ClarityType> list = new ArrayList<>();
+		int listLength = buf.getInt();
+		for (int i = 0; i < listLength; i++) {
+			int ct = Byte.toUnsignedInt(buf.get());
+			ClarityType clar = (ClarityType) deserializeCV(ct, buf);
+			list.add(clar);
+		}
+		return list;
 	}
 	
 	private ClarityType readBufferAsContent(ByteBuffer buf, boolean keyName) {
