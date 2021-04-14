@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -84,7 +85,7 @@ public class GaiaController {
 	 * @param rootFilePostModel
 	 * @return
 	 */
-	@PostMapping(value = "/v2/gaia/rootFiles")
+	@GetMapping(value = "/v2/gaia/rootFiles")
 	public Map<String, String> allRootFiles(HttpServletRequest request) {
 		Map<String, String> registry = gaiaHubReader.getAppData();
 		return registry;

@@ -3,6 +3,8 @@ package com.radicle.mesh.api.model.stxbuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.TypeAlias;
@@ -36,6 +38,7 @@ import lombok.ToString;
 @TypeAlias(value = "GaiaHubReader")
 public class GaiaHubReader {
 
+    private static final Logger logger = LogManager.getLogger(GaiaHubReader.class);
 	@Value("${radicle.gaia.huburl}") String basePath;
 	@Autowired private RestOperations restTemplate;
 	@Autowired private ObjectMapper mapper;
@@ -52,17 +55,17 @@ public class GaiaHubReader {
 	}
 	
 	private void readAppData(String appOrigin, String gaiaFilename, String gaiaUsername) throws JsonProcessingException {
-		UserAppMaps hubUrls = readUrls.get(gaiaUsername);
-		Map<String, AppsModel> apps = hubUrls.getApps();
-		AppsModel appsModel = apps.get(appOrigin);
-		String path = appsModel.getStorage() + gaiaFilename;
-		
 		try {
+			UserAppMaps hubUrls = readUrls.get(gaiaUsername);
+			Map<String, AppsModel> apps = hubUrls.getApps();
+			AppsModel appsModel = apps.get(appOrigin);
+			String path = appsModel.getStorage() + gaiaFilename;
+			
 			String response = readFromStacks(path);
 			String key = appOrigin + "__" + gaiaUsername;
+			// logger.info("App data response " + response);
 			appData.put(key, response);
-		} catch (JsonProcessingException e) {
-			// probably a 404 for the json file at this domain. Carry on...
+		} catch (Exception e) {
 		}
 	}
 	
