@@ -45,8 +45,13 @@ public class Token {
 		t.owner = (String) ((ClarityType)map.get("owner")).getValueHex();
 
 		if (map.containsKey("beneficiaryData")) {
-			Map<String, List<ClarityType>> bene = (Map<String, List<ClarityType>>)map.get("beneficiaryData");
-			t.beneficiaries = bene;
+			try {
+				Map<String, List<ClarityType>> bene = (Map<String, List<ClarityType>>)map.get("beneficiaryData");
+				t.beneficiaries = bene;
+			} catch (Exception e) {
+				// if no benneficiaries returns ClarityType(type=9) OptionalNone.
+				// this happens when this token is edition 2 or greater.
+			}
 		}
 
 		ClarityType ct = (ClarityType)map.get("nftIndex");

@@ -38,7 +38,7 @@ public class GaiaController {
 //    	collectGaiaHubRecords();
 //    }
 
-	@Scheduled(fixedDelay=10000)
+	@Scheduled(fixedDelay=3600000)
 	public void collectGaiaHubRecords() throws JsonProcessingException {
 		AppMapContract registry = contractReader.getRegistry();
 		if (registry != null && registry.getApplications() != null) {
