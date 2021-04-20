@@ -1,4 +1,6 @@
-package com.radicle.mesh.api.registration;
+package com.radicle.mesh.api;
+
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -6,14 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.radicle.mesh.api.model.stxbuffer.types.StacksTransaction;
 import com.radicle.mesh.service.registration.EmailService;
 import com.radicle.mesh.service.registration.RegistrationRepository;
+import com.radicle.mesh.service.registration.StacksTransactionRepository;
 import com.radicle.mesh.service.registration.domain.Registration;
 
 @RestController
@@ -22,15 +25,27 @@ import com.radicle.mesh.service.registration.domain.Registration;
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
 public class RegistrationController {
 
+	@Autowired private StacksTransactionRepository stacksTransactionRepository;
 	@Autowired private RegistrationRepository registrationRepository;
     @Autowired private EmailService emailService;
 
-	@PostMapping(value = "/v2/register")
-	public Boolean accounts(HttpServletRequest request, @RequestBody Registration registration) throws JsonMappingException, JsonProcessingException {
+	@PostMapping(value = "/v2/register/email")
+	public Boolean registerEmail(HttpServletRequest request, @RequestBody Registration registration) {
 		registration.setStatus(0);
 		registrationRepository.save(registration);
 		emailService.sendEmail(registration.getEmail());
 		return true;
+	}
+
+	@PostMapping(value = "/v2/register/transaction")
+	public Boolean registerTransaction(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) {
+		stacksTransactionRepository.save(stacksTransaction);
+		return true;
+	}
+
+	@GetMapping(value = "/v2/fetch/transactions")
+	public List<StacksTransaction> fetchTransaction(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) {
+		return stacksTransactionRepository.findAll();
 	}
 
 }
