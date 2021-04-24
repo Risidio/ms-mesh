@@ -84,6 +84,20 @@ public class GaiaController {
 	 * @param request
 	 * @param rootFilePostModel
 	 * @return
+	 * @throws JsonProcessingException 
+	 */
+	@GetMapping(value = "/v2/gaia/indexFiles")
+	public Map<String, String> indexFiles(HttpServletRequest request) throws JsonProcessingException {
+		collectGaiaHubRecords();
+		Map<String, String> registry = gaiaHubReader.getAppData();
+		return registry;
+	}
+	
+	/**
+	 * Get the rootFile.json file for a given app origin and uploader / username
+	 * @param request
+	 * @param rootFilePostModel
+	 * @return
 	 */
 	@GetMapping(value = "/v2/gaia/rootFiles")
 	public Map<String, String> allRootFiles(HttpServletRequest request) {

@@ -61,8 +61,8 @@ public class EmailServiceImpl implements EmailService {
     	
     	SendSmtpEmail message = new SendSmtpEmail();
     	
-    	message.setSubject("NFT at #1 Artworks");
-    	message.setHtmlContent("Thanks for requesting updates on Lot #1");
+    	message.setSubject("NFTs at #1");
+    	message.setHtmlContent("Thanks for registering your interest.");
     	
     	List<SendSmtpEmailTo> to = new ArrayList<>();
     	SendSmtpEmailTo sset = new SendSmtpEmailTo();
@@ -71,8 +71,8 @@ public class EmailServiceImpl implements EmailService {
     	message.setTo(to);
     	
     	SendSmtpEmailSender sses = new SendSmtpEmailSender();
-    	sses.setEmail("info@risidio.com");
-    	sses.setName("Risidio One");
+    	sses.setEmail("info@thisisnumberone.com");
+    	sses.setName("The #1 Team");
     	message.setSender(sses);
     	
         return message;
