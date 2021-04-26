@@ -28,6 +28,7 @@ import com.radicle.mesh.api.model.stxbuffer.types.Bid;
 import com.radicle.mesh.api.model.stxbuffer.types.Offer;
 import com.radicle.mesh.api.model.stxbuffer.types.Token;
 import com.radicle.mesh.api.model.stxbuffer.types.TokenContract;
+import com.radicle.mesh.api.model.stxbuffer.types.Transfer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -185,8 +186,14 @@ public class ContractReader {
 				Map<String, Object> data1 = (Map)data.get(fname.getName());
 				if (data1 != null) {
 					Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
-					token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
-					token.setBidHistory(readBids(application, index, token.getBidCounter()));
+					try {
+						token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
+						token.setBidHistory(readBids(application, index, token.getBidCounter()));
+						token.setTransferHistory(readTransfers(application, index, token.getTransferCounter()));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					t = token;
 				}
 			}
@@ -256,6 +263,26 @@ public class ContractReader {
 			}
 		}
 		return bids;
+	}
+
+	private List<Transfer> readTransfers(Application application, long nftIndex, long transferCount) throws JsonMappingException, JsonProcessingException {
+		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TRANSFER_AT_INDEX;
+		String path = path(application.getContractId(), fname.getName());
+		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(nftIndex));
+		List<Transfer> transfers = new ArrayList();
+		for (long index = 0; index < transferCount; index++) {
+			String arg2 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
+			String response = readFromStacks(path, new String[] {arg1, arg2});
+			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
+			if (data != null) {
+				Map<String, Object> data1 = (Map)data.get(fname.getName());
+				if (data1 != null) {
+					Transfer bid = Transfer.fromMap((Map)data.get(fname.getName()));
+					transfers.add(bid);
+				}
+			}
+		}
+		return transfers;
 	}
 
 	private String readFromStacks(String path, String[] args) throws JsonProcessingException  {

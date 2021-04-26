@@ -10,6 +10,7 @@ public enum ReadOnlyFunctionNames {
 	GET_CONTRACT_DATA("get-contract-data"),
 	GET_OFFER_AT_INDEX("get-offer-at-index"),
 	GET_BID_AT_INDEX("get-bid-at-index"),
+	GET_TRANSFER_AT_INDEX("get-transfer-at-index"),
 	GET_APP_COUNTER("get-app-counter");
 
 	private String name;

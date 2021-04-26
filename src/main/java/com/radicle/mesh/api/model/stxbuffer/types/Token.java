@@ -34,8 +34,8 @@ public class Token {
 	Map<String, List<ClarityType>> beneficiaries;
 	private List<Offer> offerHistory;
 	private List<Bid> bidHistory;
+	private List<Transfer> transferHistory;
 	private String owner;
-	private Map<String, Object> transferMap;
 	private Map<String, Object> transferHistoryMap;
 	
 	public static Token fromMap(long tokenIndex, Map<String, Object> map) {
@@ -83,20 +83,6 @@ public class Token {
 			info = (Map)map.get("saleData");
 			SaleData sd = SaleData.fromMap(info);
 			t.saleData = sd;
-		} catch (Exception e) {
-			// empty map
-		}
-
-		try {
-			info = (Map)map.get("transferMap");
-			t.transferMap = info;
-		} catch (Exception e) {
-			// empty map
-		}
-
-		try {
-			info = (Map)map.get("transferHistoryMap");
-			t.transferHistoryMap = info;
 		} catch (Exception e) {
 			// empty map
 		}
