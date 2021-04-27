@@ -24,8 +24,9 @@ import lombok.ToString;
 public class TokenInfo {
 	
 	private Long seriesOriginal;
-	private Long date;
+	private Long appTimestamp;
 	private Long edition;
+	private Long mintBlockHeight;
 	private Long maxEditions;
 	private String assetHash;
 	private String gaiaUsername;
@@ -44,8 +45,8 @@ public class TokenInfo {
 		ct = (ClarityType)map.get("edition");
 		t.edition = ((BigInteger)ct.getValue()).longValue();
 
-		ct = (ClarityType)map.get("date");
-		t.date = ((BigInteger)ct.getValue()).longValue();
+		ct = (ClarityType)map.get("mint-block-height");
+		t.mintBlockHeight = ((BigInteger)ct.getValue()).longValue();
 
 		ct = (ClarityType)map.get("series-original");
 		t.seriesOriginal = ((BigInteger)ct.getValue()).longValue();

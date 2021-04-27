@@ -25,7 +25,7 @@ public class Bid {
 
 	private String bidder;
 	private Integer saleCycle;
-	private Long whenBid;
+	private Long appTimestamp;
 	private Long amount;
 
 	public static Bid fromMap(Map<String, Object> map) {
@@ -40,8 +40,8 @@ public class Bid {
 			ct = (ClarityType)map.get("amount");
 			sd.setAmount(((BigInteger)ct.getValue()).longValue());
 			
-			ct = (ClarityType)map.get("when-bid");
-			sd.setWhenBid(((BigInteger)ct.getValue()).longValue());
+			ct = (ClarityType)map.get("app-timestamp");
+			sd.setAppTimestamp(((BigInteger)ct.getValue()).longValue());
 
 			ct = (ClarityType)map.get("sale-cycle");
 			sd.setSaleCycle(((BigInteger)ct.getValue()).intValue());

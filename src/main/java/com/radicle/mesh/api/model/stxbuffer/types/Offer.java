@@ -26,7 +26,7 @@ public class Offer {
 	private Integer accepted;
 	private String offerer;
 	private Integer saleCycle;
-	private Long madeDate;
+	private Long appTimestamp;
 	private Long amount;
 
 	public static Offer fromMap(Map<String, Object> map) {
@@ -39,8 +39,8 @@ public class Offer {
 			ct = (ClarityType)map.get("amount");
 			sd.setAmount(((BigInteger)ct.getValue()).longValue());
 			
-			ct = (ClarityType)map.get("made-date");
-			sd.setMadeDate(((BigInteger)ct.getValue()).longValue());
+			ct = (ClarityType)map.get("app-timestamp");
+			sd.setAppTimestamp(((BigInteger)ct.getValue()).longValue());
 
 			ct = (ClarityType)map.get("sale-cycle");
 			sd.setSaleCycle(((BigInteger)ct.getValue()).intValue());

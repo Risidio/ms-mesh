@@ -36,7 +36,6 @@ public class Token {
 	private List<Bid> bidHistory;
 	private List<Transfer> transferHistory;
 	private String owner;
-	private Map<String, Object> transferHistoryMap;
 	
 	public static Token fromMap(long tokenIndex, Map<String, Object> map) {
 		
