@@ -119,7 +119,7 @@ public class StaxController {
 		for (Application a : registry.getApplications()) {
 			if (a.getContractId().contentEquals(contractId)) {
 				for (Token t : a.getTokenContract().getTokens()) {
-					if (t.getTokenInfo().getAssetHash().equals(assetHash)) {
+					if (t.getTokenInfo() != null && t.getTokenInfo().getAssetHash().equals(assetHash)) {
 						token = t;
 					}
 				}

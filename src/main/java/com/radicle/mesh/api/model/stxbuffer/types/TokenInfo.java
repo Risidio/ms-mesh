@@ -28,6 +28,7 @@ public class TokenInfo {
 	private Long edition;
 	private Long mintBlockHeight;
 	private Long maxEditions;
+	private Long editionCost;
 	private String assetHash;
 	private String gaiaUsername;
 	
@@ -41,6 +42,9 @@ public class TokenInfo {
 
 		ClarityType ct = (ClarityType)map.get("max-editions");
 		t.maxEditions = ((BigInteger)ct.getValue()).longValue();
+
+		ct = (ClarityType)map.get("edition-cost");
+		t.editionCost = ((BigInteger)ct.getValue()).longValue();
 
 		ct = (ClarityType)map.get("edition");
 		t.edition = ((BigInteger)ct.getValue()).longValue();
