@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
+import com.radicle.mesh.service.registration.domain.OffChainOffer;
+
 import sendinblue.ApiClient;
 import sendinblue.ApiException;
 import sendinblue.auth.ApiKeyAuth;
@@ -31,12 +33,20 @@ public class EmailServiceImpl implements EmailService {
 
 
 	@Override
-	public String sendEmail(String to) {
-		SendSmtpEmail sendSmtpEmail = getSmtpEmail(to);
+	public String sendOfferRegisteredEmail(OffChainOffer offChainOffer) {
+    	SendSmtpEmail message = new SendSmtpEmail();
+    	message.setSubject("NFTs at #1");
+    	message.setHtmlContent("Your offer for " + offChainOffer.getAmount() + " has been registered.");
+		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, offChainOffer.getEmail());
     	return send(sendSmtpEmail);
 	}
 
-	public String sendEmail(SendSmtpEmail sendSmtpEmail) {
+	@Override
+	public String sendEmail(String to) {
+    	SendSmtpEmail message = new SendSmtpEmail();
+    	message.setSubject("NFTs at #1");
+    	message.setHtmlContent("Thanks for registering your interest.");
+		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, to);
     	return send(sendSmtpEmail);
 	}
 
@@ -57,12 +67,7 @@ public class EmailServiceImpl implements EmailService {
     	}
     }
 
-    private SendSmtpEmail getSmtpEmail(String email) {
-    	
-    	SendSmtpEmail message = new SendSmtpEmail();
-    	
-    	message.setSubject("NFTs at #1");
-    	message.setHtmlContent("Thanks for registering your interest.");
+    private SendSmtpEmail getSmtpEmail(SendSmtpEmail message, String email) {
     	
     	List<SendSmtpEmailTo> to = new ArrayList<>();
     	SendSmtpEmailTo sset = new SendSmtpEmailTo();

@@ -216,7 +216,7 @@ public class StaxController {
 	@PostMapping(value = "/v2/clarity")
 	public Principal clarity(HttpServletRequest request, @RequestBody Principal principal) {
 
-		System.out.println("RegistrationController.clarity()");
+		System.out.println("OffChainPurchaseController.clarity()");
 		return principal;
 	}
 

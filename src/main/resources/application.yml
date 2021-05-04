@@ -43,7 +43,7 @@ radicle:
       base-path: http://docker.for.mac.localhost:20443
       sidecar-path: http://docker.for.mac.localhost:3999
       admin-contract-address: ST1ESYCGJB5Z5NBHS39XPC70PGC14WAQK5XXNQYDW
-      admin-contract-name: appmap
+      admin-contract-name: appmap-v1
 cloudinary:
    cloudName: mijo-enterprises
    baseDeliveryUrl: http://res.cloudinary.com/mijo-enterprises
@@ -87,6 +87,8 @@ radicle:
    stax:
       base-path: http://139.162.204.44:20443
       sidecar-path: http://139.162.204.44:3999
+      admin-contract-address: ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT
+      admin-contract-name: appmap-v1
 
 ---
 
@@ -107,4 +109,6 @@ radicle:
    stax:
       base-path: http://178.79.138.62:20443
       sidecar-path: http://178.79.138.62:3999
+      admin-contract-address: SP1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRTH2ZTMX
+      admin-contract-name: appmap-v1
    

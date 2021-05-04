@@ -15,18 +15,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.radicle.mesh.api.model.stxbuffer.types.StacksTransaction;
 import com.radicle.mesh.service.registration.EmailService;
+import com.radicle.mesh.service.registration.OffChainOfferRepository;
 import com.radicle.mesh.service.registration.RegistrationRepository;
 import com.radicle.mesh.service.registration.StacksTransactionRepository;
+import com.radicle.mesh.service.registration.domain.OffChainOffer;
 import com.radicle.mesh.service.registration.domain.Registration;
 
 @RestController
 @EnableAsync
 @EnableScheduling
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
-public class RegistrationController {
+public class OffChainPurchaseController {
 
 	@Autowired private StacksTransactionRepository stacksTransactionRepository;
 	@Autowired private RegistrationRepository registrationRepository;
+	@Autowired private OffChainOfferRepository offChainOfferRepository;
     @Autowired private EmailService emailService;
 
 	@PostMapping(value = "/v2/register/email")
@@ -34,6 +37,13 @@ public class RegistrationController {
 		registration.setStatus(0);
 		registrationRepository.save(registration);
 		emailService.sendEmail(registration.getEmail());
+		return true;
+	}
+
+	@PostMapping(value = "/v2/register/offer")
+	public Boolean registerOffer(HttpServletRequest request, @RequestBody OffChainOffer offChainOffer) {
+		offChainOfferRepository.save(offChainOffer);
+		emailService.sendOfferRegisteredEmail(offChainOffer);
 		return true;
 	}
 
