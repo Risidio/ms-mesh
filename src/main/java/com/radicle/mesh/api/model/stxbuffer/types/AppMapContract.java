@@ -22,6 +22,8 @@ import lombok.ToString;
 public class AppMapContract {
 	private List<Application> applications;
 	private String administrator;
+	private String adminContractAddress;
+	private String adminContractName;
 	private long appCounter;
 	
 	public void addApplication(Application application) {

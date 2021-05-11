@@ -62,7 +62,7 @@ public class GaiaInterceptor implements HandlerInterceptor {
 	private boolean isProtected(HttpServletRequest request, String path) {
 		boolean protectd = false;
 		String apiKey = request.getHeader(API_KEY);
-		if (path.startsWith("/lsat/v1/payment") || path.startsWith("/lsat/payment/")) {
+		if (path.startsWith("/mesh/v2/secure/")) {
 			protectd = true;
 		}
 		if (path.startsWith("/mesh/v1/shaker")) {

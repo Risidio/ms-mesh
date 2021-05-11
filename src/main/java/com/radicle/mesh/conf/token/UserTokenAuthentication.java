@@ -96,7 +96,12 @@ public class UserTokenAuthentication {
 	 */
 	private void verifyToken(String address) {
 		try {
-			org.bitcoinj.core.ECKey key = org.bitcoinj.core.ECKey.fromPublicOnly(Hex.decode(address.getBytes()));
+			org.bitcoinj.core.ECKey key = null;
+			try {
+				key = org.bitcoinj.core.ECKey.fromPublicOnly(Hex.decode(address.getBytes()));
+			} catch (Exception e) {
+				key = org.bitcoinj.core.ECKey.fromPublicOnly(address.getBytes());
+			}
 			org.spongycastle.math.ec.ECPoint spoint = key.getPubKeyPoint();
 			BigInteger xbg = spoint.getAffineXCoord().toBigInteger();
 			BigInteger ybg = spoint.getAffineYCoord().toBigInteger();

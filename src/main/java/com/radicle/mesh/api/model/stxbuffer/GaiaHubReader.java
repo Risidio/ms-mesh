@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.api.model.stxbuffer.gaia.AppsModel;
 import com.radicle.mesh.api.model.stxbuffer.gaia.UserAppMaps;
+import com.radicle.mesh.api.model.stxbuffer.types.Application;
+import com.radicle.mesh.api.model.stxbuffer.types.Token;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,9 +47,30 @@ public class GaiaHubReader {
 	@Autowired private ObjectMapper mapper;
 	private Map<String, UserAppMaps> readUrls = new HashMap<>();
 	private Map<String, String> appData = new HashMap<>();
+	private Map<String, Map<String, String>> metaData = new HashMap<>();
 
-	public Map<String, String> getAppData()  {
-		return appData;
+	public Map<String, Map<String, String>> getAppData()  {
+		return metaData;
+	}
+	
+//	public Map<String, String> getAppData()  {
+//		return appData;
+//	}
+	
+	public void read(Application application, Token token) throws JsonProcessingException {
+		Map<String, String> contractData = metaData.get(application.getContractId());
+		if (contractData == null) {
+			contractData = new HashMap<String, String>();
+		}
+		String metaDataUrl = token.getTokenInfo().getMetaDataUrl();
+		try {
+			HttpEntity he = new HttpEntity<String>(new HttpHeaders());
+			HttpEntity<String> response = restTemplate.exchange(metaDataUrl, HttpMethod.GET, he, String.class);
+			contractData.put(token.getTokenInfo().getAssetHash(), response.getBody());
+			metaData.put(application.getContractId(), contractData);
+		} catch (RestClientException e) {
+			logger.error("Nothing found at: " + metaDataUrl);
+		}
 	}
 	
 	public void read(String appOrigin, String gaiaFilename, String gaiaUsername) throws JsonProcessingException {

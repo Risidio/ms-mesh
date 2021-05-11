@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,7 +29,6 @@ import com.radicle.mesh.api.model.stxbuffer.types.Bid;
 import com.radicle.mesh.api.model.stxbuffer.types.Offer;
 import com.radicle.mesh.api.model.stxbuffer.types.Token;
 import com.radicle.mesh.api.model.stxbuffer.types.TokenContract;
-import com.radicle.mesh.api.model.stxbuffer.types.Transfer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,6 +60,7 @@ public class ContractReader {
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ClarityDeserialiser clarityDeserialiser;
 	@Autowired private ClaritySerialiser claritySerialiser;
+	@Autowired private GaiaHubReader gaiaHubReader;
 	private AppMapContract registry;
 
 	public AppMapContract getRegistry() {
@@ -68,6 +69,8 @@ public class ContractReader {
 
 	public AppMapContract read() throws JsonProcessingException {
 		AppMapContract appMapContract = new AppMapContract();
+		appMapContract.setAdminContractAddress(adminContractAddress);
+		appMapContract.setAdminContractName(adminContractName);
 		readAppMap(appMapContract, adminContractAddress + "." + adminContractName, ReadOnlyFunctionNames.GET_CONTRACT_DATA);
 		readApplications(appMapContract);
 		List<Application> applications = appMapContract.getApplications();
@@ -170,10 +173,22 @@ public class ContractReader {
 		TokenContract tokenContract = application.getTokenContract();
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
 			Token token = readToken(application, index);
-			if (token != null) tokenContract.addToken(token);
+			if (token != null) {
+				tokenContract.addToken(token);
+				readMetaData(application, token);
+			}
 		}
 	}
 	
+	@Async
+	public void readMetaData(Application application, Token token) {
+		try {
+			gaiaHubReader.read(application, token);
+		} catch (JsonProcessingException e) {
+			logger.error(e.getMessage());
+		}
+	}
+
 	private Token readToken(Application application, long index) throws JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_INDEX;
 		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
@@ -189,7 +204,6 @@ public class ContractReader {
 					try {
 						token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
 						token.setBidHistory(readBids(application, index, token.getBidCounter()));
-						token.setTransferHistory(readTransfers(application, index, token.getTransferCounter()));
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -263,26 +277,6 @@ public class ContractReader {
 			}
 		}
 		return bids;
-	}
-
-	private List<Transfer> readTransfers(Application application, long nftIndex, long transferCount) throws JsonMappingException, JsonProcessingException {
-		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TRANSFER_AT_INDEX;
-		String path = path(application.getContractId(), fname.getName());
-		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(nftIndex));
-		List<Transfer> transfers = new ArrayList();
-		for (long index = 0; index < transferCount; index++) {
-			String arg2 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
-			String response = readFromStacks(path, new String[] {arg1, arg2});
-			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-			if (data != null) {
-				Map<String, Object> data1 = (Map)data.get(fname.getName());
-				if (data1 != null) {
-					Transfer bid = Transfer.fromMap((Map)data.get(fname.getName()));
-					transfers.add(bid);
-				}
-			}
-		}
-		return transfers;
 	}
 
 	private String readFromStacks(String path, String[] args) throws JsonProcessingException  {

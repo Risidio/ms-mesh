@@ -53,9 +53,14 @@ public class OffChainPurchaseController {
 		return true;
 	}
 
-	@GetMapping(value = "/v2/fetch/transactions")
-	public List<StacksTransaction> fetchTransaction(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) {
+	@GetMapping(value = "/v2/secure/fetch/transactions")
+	public List<StacksTransaction> fetchTransaction(HttpServletRequest request) {
 		return stacksTransactionRepository.findAll();
+	}
+
+	@GetMapping(value = "/v2/secure/fetch/offers")
+	public List<OffChainOffer> fetchOffers(HttpServletRequest request) {
+		return offChainOfferRepository.findAll();
 	}
 
 }

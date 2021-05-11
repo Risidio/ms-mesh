@@ -30,7 +30,7 @@ public class TokenInfo {
 	private Long maxEditions;
 	private Long editionCost;
 	private String assetHash;
-	private String gaiaUsername;
+	private String metaDataUrl;
 	
 	public static TokenInfo fromMap(Map<String, Object> map) {
 		
@@ -38,7 +38,7 @@ public class TokenInfo {
 
 		t.assetHash = (String) ((ClarityType)map.get("asset-hash")).getValueHex();
 
-		t.gaiaUsername = (String) ((ClarityType)map.get("gaia-username")).getValue();
+		t.metaDataUrl = (String) ((ClarityType)map.get("meta-data-url")).getValue();
 
 		ClarityType ct = (ClarityType)map.get("max-editions");
 		t.maxEditions = ((BigInteger)ct.getValue()).longValue();

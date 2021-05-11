@@ -28,13 +28,11 @@ public class Token {
 	private Long offerCounter;
 	private Long bidCounter;
 	private Long editionCounter;
-	private Long transferCounter;
 	private SaleData saleData;
 	private TokenInfo tokenInfo;
 	Map<String, List<ClarityType>> beneficiaries;
 	private List<Offer> offerHistory;
 	private List<Bid> bidHistory;
-	private List<Transfer> transferHistory;
 	private String owner;
 	
 	public static Token fromMap(long tokenIndex, Map<String, Object> map) {
@@ -64,9 +62,6 @@ public class Token {
 
 		ct = (ClarityType)map.get("editionCounter");
 		t.editionCounter = ((BigInteger)ct.getValue()).longValue();
-
-		ct = (ClarityType)map.get("transferCounter");
-		t.transferCounter = ((BigInteger)ct.getValue()).longValue();
 
 		Map<String, Object> info = null;
 

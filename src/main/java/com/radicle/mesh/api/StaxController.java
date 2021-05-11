@@ -48,8 +48,6 @@ public class StaxController {
 	@Autowired private RestOperations restTemplate;
 	@Value("${radicle.stax.base-path}") String basePath;
 	@Value("${radicle.stax.sidecar-path}") String sidecarPath;
-	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
-	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ContractReader contractReader;
 	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
@@ -100,6 +98,15 @@ public class StaxController {
 		}
 	}
 	
+	@PostMapping(value = "/v1/secure/shaker")
+	public Shaker superAdmin(HttpServletRequest request) {
+		String user = (String) request.getSession().getAttribute("USERNAME");
+		if (user == null || !user.equals("mijoco.id.blockstack")) {
+			return null;
+		}
+		return new Shaker();
+	}
+
 	private Application getApplication(String contractId) {
 		AppMapContract registry = contractReader.getRegistry();
 		if (registry == null || registry.getApplications() == null) return null;
@@ -133,7 +140,7 @@ public class StaxController {
 		return contractReader.getRegistry();
 	}
 
-	@GetMapping(value = "/v2/registrate")
+	@GetMapping(value = "/v2/secure/registrate")
 	public AppMapContract registrate(HttpServletRequest request) throws JsonProcessingException {
 		AppMapContract registry = contractReader.read();
 		return registry;
@@ -163,15 +170,6 @@ public class StaxController {
 		indexes.add(assetHash);
 		contractIdNftIndexes.put(contractId, indexes);
 		return getToken(contractId, assetHash);
-	}
-
-	@PostMapping(value = "/v1/shaker")
-	public Shaker superAdmin(HttpServletRequest request) {
-		String user = (String) request.getSession().getAttribute("USERNAME");
-		if (user == null || !user.equals("mijoco.id.blockstack")) {
-			return null;
-		}
-		return new Shaker();
 	}
 
 	@PostMapping(value = "/v2/accounts")
