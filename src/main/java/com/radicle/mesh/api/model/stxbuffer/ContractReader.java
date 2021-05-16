@@ -267,13 +267,18 @@ public class ContractReader {
 		for (long index = 0; index < bidCounter; index++) {
 			String arg2 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
 			String response = readFromStacks(path, new String[] {arg1, arg2});
-			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-			if (data != null) {
-				Map<String, Object> data1 = (Map)data.get(fname.getName());
-				if (data1 != null) {
-					Bid bid = Bid.fromMap((Map)data.get(fname.getName()));
-					bids.add(bid);
+			try {
+				Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
+				if (data != null) {
+					Map<String, Object> data1 = (Map)data.get(fname.getName());
+					if (data1 != null) {
+						Bid bid = Bid.fromMap((Map)data.get(fname.getName()));
+						bids.add(bid);
+					}
 				}
+			} catch (Exception e) {
+				// Optional none some how returned for the bid at this index;
+				// ?bids.add(new Bid());
 			}
 		}
 		return bids;

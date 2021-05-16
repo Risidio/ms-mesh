@@ -140,7 +140,7 @@ public class StaxController {
 		return contractReader.getRegistry();
 	}
 
-	@GetMapping(value = "/v2/secure/registrate")
+	@GetMapping(value = "/v2/registrate")
 	public AppMapContract registrate(HttpServletRequest request) throws JsonProcessingException {
 		AppMapContract registry = contractReader.read();
 		return registry;

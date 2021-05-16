@@ -1,5 +1,8 @@
 package com.radicle.mesh.conf.token;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,6 +28,14 @@ public class GaiaInterceptor implements HandlerInterceptor {
 	private static final String ALLOWED_PATH_BTC = "/bitcoin/address";
 	private static final String ALLOWED_PATH_LND = "/bitcoin/invoice";
 	private static final String ALLOWED_PATH_INV = "/lightning";
+	private static final Set<String> whitelist = new HashSet<String>();
+	static {
+		whitelist.add("radicle_art.id.blockstack");
+		whitelist.add("yakahead.id.blockstack");
+		whitelist.add("figis.id.blockstack");
+		whitelist.add("mijoco.id.blockstack");
+		whitelist.add("mike.personal.id");
+	}
 	
 
 	@Override
@@ -33,6 +44,7 @@ public class GaiaInterceptor implements HandlerInterceptor {
 			if (handler instanceof HandlerMethod) {
 				String path = request.getRequestURI();
 				if (isProtected(request, path)) {
+					logger.info("Protected domain: " + path);
 					String address = request.getHeader(Identity_Address);
 					String authToken = request.getHeader(AUTHORIZATION);
 					if (authToken == null) {
@@ -42,8 +54,12 @@ public class GaiaInterceptor implements HandlerInterceptor {
 					UserTokenAuthentication v1Authentication = UserTokenAuthentication.getInstance(authToken);
 					boolean auth = v1Authentication.isAuthenticationValid(address);
 					String username = v1Authentication.getUsername();
+					logger.info("Protected domain: request from " + username + " and auth is " + auth);
 					if (!auth) {
 						throw new Exception("Failed validation of jwt token");
+					}
+					if (!isWhitelisted(username)) {
+						throw new Exception("Not allowed");
 					}
 					request.getSession().setAttribute("USERNAME", username);
 				}
@@ -57,6 +73,10 @@ public class GaiaInterceptor implements HandlerInterceptor {
 			throw e;
 		}
 		return HandlerInterceptor.super.preHandle(request, response, handler);
+	}
+	
+	private boolean isWhitelisted(String username) {
+		return whitelist.contains(username);
 	}
 	
 	private boolean isProtected(HttpServletRequest request, String path) {

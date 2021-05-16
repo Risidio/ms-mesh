@@ -1,7 +1,12 @@
 package com.radicle.mesh.service.registration;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +29,13 @@ import sibModel.SendSmtpEmailTo;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    @Value("${sendinblue.api.emailTemplate1}")
+    private String emailTemplate1Name;
+    private String template1;
+    
+    private static final String BODY_HTML = "</body></html>";
+	private static final String HTML_HEAD_BODY = "<html><head></head><body style=\"background: #000; color: #fff;\">";
+	private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 	@Autowired private MongoTemplate mongoTemplate;
 //	@Autowired private TransactionalEmailsApi apiInstance;
 //    @Autowired private MandrillApi mandrillApi;
@@ -36,19 +47,53 @@ public class EmailServiceImpl implements EmailService {
 	public String sendOfferRegisteredEmail(OffChainOffer offChainOffer) {
     	SendSmtpEmail message = new SendSmtpEmail();
     	message.setSubject("NFTs at #1");
-    	message.setHtmlContent("Your offer for " + offChainOffer.getAmount() + " has been registered.");
+    	String htmlContent = getTemplate(emailTemplate1Name);
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", "Offer Made");
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT2", "Your offer for " + offChainOffer.getAmount() + " STX has been registered.");
+    	message.setHtmlContent(htmlContent);;
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, offChainOffer.getEmail());
     	return send(sendSmtpEmail);
 	}
 
 	@Override
-	public String sendEmail(String to) {
+	public String sendRegisterInterestEmail(String to) {
     	SendSmtpEmail message = new SendSmtpEmail();
-    	message.setSubject("NFTs at #1");
-    	message.setHtmlContent("Thanks for registering your interest.");
+    	message.setSubject("NFT's at #1");
+    	String htmlContent = getTemplate(emailTemplate1Name);
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", "");
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT2", "Thanks for registering your interest.");
+    	message.setHtmlContent(htmlContent);;
+    	// message.setHtmlContent("Thanks for registering your interest.");
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, to);
     	return send(sendSmtpEmail);
 	}
+
+    private String getTemplate(String templateName) {
+    	try {
+    		String template = null;
+        	if (templateName.equals(emailTemplate1Name)) {
+        		if (template1 != null) {
+        			template = template1;
+        		} else {
+        			template =loadTemplate(emailTemplate1Name);
+        		}
+        	} else {
+        		throw new RuntimeException("Template not supported");
+        	}
+        	return template;
+    	} catch (Exception e) {
+    	    logger.error("SIB: " + e.getMessage());
+    	    return "template not found";
+    	}
+    }
+
+    private String loadTemplate(String templateName) {
+        InputStream inputStream = EmailServiceImpl.class.getResourceAsStream("/static/" + templateName);
+        template1 = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+            .lines()
+            .collect(Collectors.joining("\n"));
+        return template1;
+    }
 
     private String send(SendSmtpEmail sendSmtpEmail) {
     	

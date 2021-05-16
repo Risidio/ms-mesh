@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,16 +26,20 @@ import com.radicle.mesh.service.registration.domain.Registration;
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
 public class OffChainPurchaseController {
 
-	@Autowired private StacksTransactionRepository stacksTransactionRepository;
-	@Autowired private RegistrationRepository registrationRepository;
-	@Autowired private OffChainOfferRepository offChainOfferRepository;
-    @Autowired private EmailService emailService;
+	@Autowired
+	private StacksTransactionRepository stacksTransactionRepository;
+	@Autowired
+	private RegistrationRepository registrationRepository;
+	@Autowired
+	private OffChainOfferRepository offChainOfferRepository;
+	@Autowired
+	private EmailService emailService;
 
 	@PostMapping(value = "/v2/register/email")
 	public Boolean registerEmail(HttpServletRequest request, @RequestBody Registration registration) {
 		registration.setStatus(0);
 		registrationRepository.save(registration);
-		emailService.sendEmail(registration.getEmail());
+		emailService.sendRegisterInterestEmail(registration.getEmail());
 		return true;
 	}
 
@@ -53,12 +56,12 @@ public class OffChainPurchaseController {
 		return true;
 	}
 
-	@GetMapping(value = "/v2/secure/fetch/transactions")
+	@PostMapping(value = "/v2/secure/fetch/transactions")
 	public List<StacksTransaction> fetchTransaction(HttpServletRequest request) {
 		return stacksTransactionRepository.findAll();
 	}
 
-	@GetMapping(value = "/v2/secure/fetch/offers")
+	@PostMapping(value = "/v2/secure/fetch/offers")
 	public List<OffChainOffer> fetchOffers(HttpServletRequest request) {
 		return offChainOfferRepository.findAll();
 	}
