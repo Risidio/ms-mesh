@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestOperations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.radicle.mesh.api.model.stxbuffer.ContractReader;
@@ -36,7 +35,6 @@ public class GaiaController {
     private static final Logger logger = LogManager.getLogger(GaiaController.class);
 	@Autowired private GaiaHubReader gaiaHubReader;
 	@Autowired private ContractReader contractReader;
-	@Autowired private RestOperations restTemplate;
 
 //    @PostConstruct
 //    public void init() throws JsonProcessingException {

@@ -13,7 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestOperations;
 
 import com.radicle.mesh.service.registration.domain.OffChainOffer;
 
@@ -29,45 +35,42 @@ import sibModel.SendSmtpEmailTo;
 @Service
 public class EmailServiceImpl implements EmailService {
 
+	@Autowired private RestOperations restTemplate;
     @Value("${sendinblue.api.emailTemplate1}")
     private String emailTemplate1Name;
+    @Value("${sendinblue.api.emailTemplate1Url}")
+    private String emailTemplate1Url;
     private String template1;
     
-    private static final String BODY_HTML = "</body></html>";
-	private static final String HTML_HEAD_BODY = "<html><head></head><body style=\"background: #000; color: #fff;\">";
 	private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 	@Autowired private MongoTemplate mongoTemplate;
-//	@Autowired private TransactionalEmailsApi apiInstance;
-//    @Autowired private MandrillApi mandrillApi;
 	@Value("${sendinblue.api.key}")
 	String sendInBlueApiKey;
 
 
 	@Override
-	public String sendOfferRegisteredEmail(OffChainOffer offChainOffer) {
+	public String sendOfferRegisteredEmail(OffChainOffer offChainOffer, String content) {
     	SendSmtpEmail message = new SendSmtpEmail();
     	message.setSubject("NFTs at #1");
     	String htmlContent = getTemplate(emailTemplate1Name);
-    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", "Offer Made");
-    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT2", "Your offer for " + offChainOffer.getAmount() + " STX has been registered.");
-    	message.setHtmlContent(htmlContent);;
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", content);
+    	message.setHtmlContent(htmlContent);
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, offChainOffer.getEmail());
     	return send(sendSmtpEmail);
 	}
 
 	@Override
-	public String sendRegisterInterestEmail(String to) {
+	public String sendRegisterInterestEmail(String to, String content) {
     	SendSmtpEmail message = new SendSmtpEmail();
     	message.setSubject("NFT's at #1");
     	String htmlContent = getTemplate(emailTemplate1Name);
-    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", "");
-    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT2", "Thanks for registering your interest.");
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", content);
     	message.setHtmlContent(htmlContent);;
     	// message.setHtmlContent("Thanks for registering your interest.");
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, to);
     	return send(sendSmtpEmail);
 	}
-
+	
     private String getTemplate(String templateName) {
     	try {
     		String template = null;
@@ -127,6 +130,25 @@ public class EmailServiceImpl implements EmailService {
     	
         return message;
     }
+
+	@Override
+	public String loadEmailTemplates() {
+		fetchTemplate(emailTemplate1Url);
+		return template1;
+	}
+
+	private void fetchTemplate(String url) {
+		HttpEntity<String> e = new HttpEntity<String>(getHeaders());
+		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, e, String.class);
+		template1 = response.getBody();
+	}
+
+	private HttpHeaders getHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.TEXT_HTML);
+		return headers;
+	}
+
 
 //    public void sendEmail(TransacEmail emailMessage) {
 //

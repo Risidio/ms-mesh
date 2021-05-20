@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,14 +40,14 @@ public class OffChainPurchaseController {
 	public Boolean registerEmail(HttpServletRequest request, @RequestBody Registration registration) {
 		registration.setStatus(0);
 		registrationRepository.save(registration);
-		emailService.sendRegisterInterestEmail(registration.getEmail());
+		emailService.sendRegisterInterestEmail(registration.getEmail(), registration.getEmailContent());
 		return true;
 	}
 
 	@PostMapping(value = "/v2/register/offer")
 	public Boolean registerOffer(HttpServletRequest request, @RequestBody OffChainOffer offChainOffer) {
 		offChainOfferRepository.save(offChainOffer);
-		emailService.sendOfferRegisteredEmail(offChainOffer);
+		emailService.sendOfferRegisteredEmail(offChainOffer, offChainOffer.getEmailContent());
 		return true;
 	}
 
@@ -56,14 +57,30 @@ public class OffChainPurchaseController {
 		return true;
 	}
 
-	@PostMapping(value = "/v2/secure/fetch/transactions")
+	@GetMapping(value = "/v2/fetch/transactions")
 	public List<StacksTransaction> fetchTransaction(HttpServletRequest request) {
 		return stacksTransactionRepository.findAll();
 	}
 
-	@PostMapping(value = "/v2/secure/fetch/offers")
+	@GetMapping(value = "/v2/fetch/offers")
 	public List<OffChainOffer> fetchOffers(HttpServletRequest request) {
 		return offChainOfferRepository.findAll();
+	}
+
+	@GetMapping(value = "/v2/secure/fetch/transactions")
+	public List<StacksTransaction> fetchTransactionsSecure(HttpServletRequest request) {
+		return stacksTransactionRepository.findAll();
+	}
+
+	@GetMapping(value = "/v2/secure/fetch/offers")
+	public List<OffChainOffer> fetchOffersSecure(HttpServletRequest request) {
+		return offChainOfferRepository.findAll();
+	}
+
+	@GetMapping(value = "/v2/email/templates")
+	public String fetchEmailTemplates(HttpServletRequest request) {
+		String template = emailService.loadEmailTemplates();
+		return template;
 	}
 
 }

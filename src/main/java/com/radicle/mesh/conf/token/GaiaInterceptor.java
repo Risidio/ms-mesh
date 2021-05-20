@@ -45,10 +45,14 @@ public class GaiaInterceptor implements HandlerInterceptor {
 				String path = request.getRequestURI();
 				if (isProtected(request, path)) {
 					logger.info("Protected domain: " + path);
-					String address = request.getHeader(Identity_Address);
-					String authToken = request.getHeader(AUTHORIZATION);
+					String address = response.getHeader(Identity_Address);
+					String authToken = response.getHeader(AUTHORIZATION);
 					if (authToken == null) {
-						throw new Exception("Failed validation - no auth token");
+						address = request.getHeader(Identity_Address);
+						authToken = request.getHeader(AUTHORIZATION);
+						if (authToken == null) {
+							throw new Exception("Failed validation - no auth token");
+						}
 					}
 					authToken = authToken.split(" ")[1]; // stripe out Bearer string before passing along..
 					UserTokenAuthentication v1Authentication = UserTokenAuthentication.getInstance(authToken);
@@ -81,15 +85,17 @@ public class GaiaInterceptor implements HandlerInterceptor {
 	
 	private boolean isProtected(HttpServletRequest request, String path) {
 		boolean protectd = false;
-		String apiKey = request.getHeader(API_KEY);
-		if (path.startsWith("/mesh/v2/secure/")) {
-			protectd = true;
-		}
-		if (path.startsWith("/mesh/v1/shaker")) {
-			protectd = true;
-		}
-		if (apiKey != null && !apiKey.startsWith(BLOCKSTACK)) {
-			protectd = false;
+		if (request.getMethod().equalsIgnoreCase("POST") || request.getMethod().equalsIgnoreCase("GET")) {
+			String apiKey = request.getHeader(API_KEY);
+			if (path.startsWith("/mesh/v2/secure/")) {
+				protectd = true;
+			}
+			if (path.startsWith("/mesh/v1/shaker")) {
+				protectd = true;
+			}
+			if (apiKey != null && !apiKey.startsWith(BLOCKSTACK)) {
+				protectd = false;
+			}
 		}
 		return protectd;
 	}

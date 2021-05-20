@@ -1,6 +1,8 @@
 package com.radicle.mesh.service.registration.domain;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,8 +18,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeAlias(value = "OffChainOffer")
+@Document
 public class OffChainOffer {
 
+	@Id	private String id;
 	private Integer status;
 	private String domain;
 	private String email;
@@ -29,5 +33,6 @@ public class OffChainOffer {
 	private Integer saleCycle;
 	private Long appTimestamp;
 	private Long amount;
+	private String emailContent;
 
 }

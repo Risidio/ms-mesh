@@ -12,6 +12,7 @@ opennode:
       appEndpoint: https://dev.opennode.com
 sendinblue:
    api:
+      emailTemplate1Url: https://staging.thisisnumberone.com/Email.html
       emailTemplate1: EmailTemplate1.html
       key: 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
 mandrill:
@@ -70,8 +71,8 @@ application:
    mongoIp: mongodb://localhost
 radicle:
    stax:
-      base-path: http://78.198.137.87:20443
-      sidecar-path: http://78.198.137.87:3999
+      base-path: http://172.17.0.1:20443
+      sidecar-path: http://172.17.0.1:3999
 
 ---
 
@@ -109,6 +110,9 @@ spring:
 application:
    mongoIp: mongodb://mongodb
    mongoPort: 27017
+sendinblue:
+   api:
+      emailTemplate1Url: https://thisisnumberone.com/Email.html
 squareup:
    api:
       applicationName: rpay-prom

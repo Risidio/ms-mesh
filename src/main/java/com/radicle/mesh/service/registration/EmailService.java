@@ -4,6 +4,7 @@ import com.radicle.mesh.service.registration.domain.OffChainOffer;
 
 public interface EmailService
 {
-    public String sendOfferRegisteredEmail(OffChainOffer offChainOffer);
-    public String sendRegisterInterestEmail(String to);
+    public String sendOfferRegisteredEmail(OffChainOffer offChainOffer, String content);
+    public String sendRegisterInterestEmail(String to, String content);
+	public String loadEmailTemplates();
 }
