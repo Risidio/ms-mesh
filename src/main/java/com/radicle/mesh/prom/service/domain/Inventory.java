@@ -1,4 +1,4 @@
-package com.radicle.mesh.service.registration.domain;
+package com.radicle.mesh.prom.service.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -19,20 +19,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @TypeAlias(value = "Inventory")
 @Document
-public class OffChainOffer {
+public class Inventory {
 
 	@Id	private String id;
 	private Integer status;
 	private String domain;
-	private String email;
-	private String contractAddress;
-	private String contractName;
+	private String listPrice;
 	private String assetHash;
-	private String offerer;
+	private String owner;
 	private Long nftIndex;
-	private Integer saleCycle;
-	private Long appTimestamp;
-	private Long amount;
-	private String emailContent;
 
 }

@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "OffChainOffer")
+@TypeAlias(value = "Inventory")
 public class Offer {
 
 	private Integer accepted;
