@@ -16,37 +16,42 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.radicle.mesh.prom.service.InventoryRepository;
-import com.radicle.mesh.prom.service.domain.Inventory;
+import com.radicle.mesh.prom.service.AssetRepository;
+import com.radicle.mesh.prom.service.domain.Asset;
 
 @RestController
 @EnableAsync
 @EnableScheduling
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
-public class InventoryController {
+public class AssetController {
 
 	@Autowired
-	private InventoryRepository inventoryRepository;
+	private AssetRepository assetRepository;
 
 	@GetMapping(value = "/v2/inventory/{assetHash}")
-	public Optional<Inventory> findOne(@PathVariable String assetHash) {
-		Optional<Inventory> o = inventoryRepository.findById(assetHash);
+	public Optional<Asset> findOne(@PathVariable String assetHash) {
+		Optional<Asset> o = assetRepository.findById(assetHash);
 		return o;
 	}
 	
 	@GetMapping(value = "/v2/inventory")
-	public List<Inventory> findAll() {
-		return inventoryRepository.findAll();
+	public List<Asset> findAll() {
+		return assetRepository.findAll();
 	}
 	
 	@PostMapping(value = "/v2/inventory")
-	public Inventory post(HttpServletRequest request, @RequestBody Inventory inventory) {
-		return inventoryRepository.save(inventory);
+	public Asset post(HttpServletRequest request, @RequestBody Asset inventory) {
+		return assetRepository.save(inventory);
+	}
+
+	@PostMapping(value = "/v2/inventories")
+	public List<Asset> post(HttpServletRequest request, @RequestBody List<Asset> inventories) {
+		return assetRepository.saveAll(inventories);
 	}
 
 	@PutMapping(value = "/v2/inventory")
-	public Inventory put(HttpServletRequest request, @RequestBody Inventory inventory) {
-		return inventoryRepository.save(inventory);
+	public Asset put(HttpServletRequest request, @RequestBody Asset inventory) {
+		return assetRepository.save(inventory);
 	}
 
 }
