@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf;
+package com.radicle.mesh.common.conf;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

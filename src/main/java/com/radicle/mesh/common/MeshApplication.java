@@ -1,4 +1,4 @@
-package com.radicle.mesh;
+package com.radicle.mesh.common;
 
 import java.util.Arrays;
 

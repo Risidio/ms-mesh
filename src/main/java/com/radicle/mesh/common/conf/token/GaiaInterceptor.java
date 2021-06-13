@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf.token;
+package com.radicle.mesh.common.conf.token;
 
 import java.util.HashSet;
 import java.util.Set;

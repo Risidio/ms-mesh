@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf.token;
+package com.radicle.mesh.common.conf.token;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

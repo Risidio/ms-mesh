@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf;
+package com.radicle.mesh.common.conf;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

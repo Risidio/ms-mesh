@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf;
+package com.radicle.mesh.common.conf;
 
 //@Configuration
 public class TransMailConfig {

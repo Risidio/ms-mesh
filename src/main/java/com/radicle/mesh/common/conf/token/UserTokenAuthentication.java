@@ -1,4 +1,4 @@
-package com.radicle.mesh.conf.token;
+package com.radicle.mesh.common.conf.token;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;

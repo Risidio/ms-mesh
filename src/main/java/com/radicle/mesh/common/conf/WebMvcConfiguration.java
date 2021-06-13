@@ -1,6 +1,4 @@
-package com.radicle.mesh.conf;
-
-import com.radicle.mesh.conf.token.GaiaInterceptor;
+package com.radicle.mesh.common.conf;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +6,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.radicle.mesh.common.conf.token.GaiaInterceptor;
 
 @Configuration
 @EnableWebMvc
