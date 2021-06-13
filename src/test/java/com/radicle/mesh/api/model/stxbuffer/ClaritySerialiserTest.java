@@ -6,6 +6,9 @@ import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.radicle.mesh.stacks.model.stxbuffer.ClaritySerialiser;
+import com.radicle.mesh.stacks.model.stxbuffer.ClarityType;
+
 class ClaritySerialiserTest {
 	                                           //           0123456789012345678901234567890123456789
 	// 0x${serializeCV(intCV(1)).toString('hex') <= 2 =>  0x0000000000000000000000000000000001
