@@ -59,7 +59,7 @@ public class StaxController {
 //    	contractReader.read();
 //    }
 
-	@Scheduled(fixedDelay=10000)
+	@Scheduled(fixedDelay=240000)
 	public void pushData() throws JsonProcessingException {
 		AppMapContract registry = contractReader.read();
 		simpMessagingTemplate.convertAndSend("/queue/contract-news", registry);

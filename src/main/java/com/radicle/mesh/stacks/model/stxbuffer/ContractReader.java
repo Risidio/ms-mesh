@@ -76,8 +76,11 @@ public class ContractReader {
 		List<Application> applications = appMapContract.getApplications();
 		if (applications != null) {
 			for (Application application : applications) {
-				readTokenContract(application);
-				readTokens(application);
+				logger.info("Applications -> " + application.toString());
+				if (application.getStatus() != 3) {
+					readTokenContract(application);
+					readTokens(application);
+				}
 			}
 		}
 		registry = appMapContract;
@@ -166,6 +169,7 @@ public class ContractReader {
 		String response = readFromStacks(path, new String[0]);
 		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 		TokenContract tc = TokenContract.fromMap(data);
+		logger.info("Applications -> Token Contract -> " + tc.toString());
 		application.setTokenContract(tc);
 	}
 
@@ -174,6 +178,7 @@ public class ContractReader {
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
 			Token token = readToken(application, index);
 			if (token != null) {
+				logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 				tokenContract.addToken(token);
 				readMetaData(application, token);
 			}
