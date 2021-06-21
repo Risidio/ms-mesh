@@ -28,6 +28,8 @@ public class Asset {
 	private String projectId;
 	private String name;
 	private String description;
+	private Integer edition;
+	private Integer maxEditions;
 	private Long created;
 	private Long updated;
 	private String owner;

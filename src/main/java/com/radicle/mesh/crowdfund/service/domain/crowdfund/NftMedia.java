@@ -20,6 +20,5 @@ public class NftMedia {
 	private MediaObject artworkFile;
 	private MediaObject artworkClip;
 	private MediaObject coverImage;
-	private List<MediaObject> mainImages;
-	private List<MediaObject> thumbnails;
+	private List<MediaObject> galleryImages;
 }

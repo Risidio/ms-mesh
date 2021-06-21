@@ -46,9 +46,6 @@ public class AssetController {
 	@GetMapping(value = "/v2/assets")
 	public List<Asset> findAll() {
 		List<Asset> assets = assetRepository.findAll();
-//		for (Asset asset : assets) {
-//			logger.info(asset.getInventory().toString());
-//		}
 		return assets;
 	}
 	
