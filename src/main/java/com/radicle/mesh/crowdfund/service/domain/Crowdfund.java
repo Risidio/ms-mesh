@@ -5,7 +5,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.radicle.mesh.crowdfund.service.domain.crowdfund.NftMedia;
-import com.radicle.mesh.payments.service.domain.MoneyModal;
+import com.radicle.mesh.payments.service.domain.Money;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,15 +20,15 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias(value = "CrowdFund")
+@TypeAlias(value = "Crowdfund")
 @Document
-public class CrowdFund {
+public class Crowdfund {
 
 	@Id private String id;
+	private String projectId;
 	private String name;
 	private String description;
-	private MoneyModal target;
-	private MoneyModal runningTotal;
+	private Money target;
+	private Money runningTotal;
 	private NftMedia nftMedia;
-	
 }

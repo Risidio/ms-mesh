@@ -5,10 +5,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.radicle.mesh.payments.service.domain.Payment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,33 +28,30 @@ public class Backer {
 	private Integer status;
 	private String stxAddress;
 	private String username;
-	private String email;
+	private String nickname;
 	private String profileUrl;
-    @DBRef
-	private List<Payment> payments;
-    @DBRef
-	private List<Asset> assets;
-    @DBRef
-	private List<Perk> perks;
+	private List<String> paymentIds;
+	private List<String> assetIds;
+	private List<String> perkIds;
 
-    public boolean addPayment(Payment payment) {
-    	if (payments == null) {
-    		payments = new ArrayList<Payment>();
+    public boolean addPayment(String paymentId) {
+    	if (paymentIds == null) {
+    		paymentIds = new ArrayList<String>();
     	}
-    	return payments.add(payment);
+    	return paymentIds.add(paymentId);
     }
     
-    public boolean addPayment(Asset asset) {
-    	if (assets == null) {
-    		assets = new ArrayList<Asset>();
+    public boolean addAsset(String assetId) {
+    	if (assetIds == null) {
+    		assetIds = new ArrayList<String>();
     	}
-    	return assets.add(asset);
+    	return assetIds.add(assetId);
     }
     
-    public boolean addPayment(Perk perk) {
-    	if (perks == null) {
-    		perks = new ArrayList<Perk>();
+    public boolean addPerk(String perkId) {
+    	if (perkIds == null) {
+    		perkIds = new ArrayList<String>();
     	}
-    	return perks.add(perk);
+    	return perkIds.add(perkId);
     }
 }

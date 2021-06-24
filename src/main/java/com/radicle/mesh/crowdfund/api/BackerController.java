@@ -20,10 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.radicle.mesh.crowdfund.service.AssetRepository;
 import com.radicle.mesh.crowdfund.service.BackerRepository;
-import com.radicle.mesh.crowdfund.service.domain.crowdfund.Asset;
 import com.radicle.mesh.crowdfund.service.domain.crowdfund.Backer;
 import com.radicle.mesh.payments.service.PaymentRepository;
-import com.radicle.mesh.payments.service.domain.Payment;
 
 @RestController
 @EnableAsync
@@ -45,7 +43,7 @@ public class BackerController {
 		if (keyName.equals("stxAddress")) {
 			o = backerRepository.findByStxAddress(keyValue);
 		} else if (keyName.equals("email")) {
-			o = backerRepository.findByEmail(keyValue);
+			o = backerRepository.findByUsername(keyValue);
 		} else {
 			o = backerRepository.findByUsername(keyValue);
 		}
@@ -66,17 +64,16 @@ public class BackerController {
 	
 	@PostMapping(value = "/v2/backer")
 	public Backer post(HttpServletRequest request, @RequestBody Backer backer) {
-		if (backer.getPayments() != null) {
-			for (Payment payment : backer.getPayments()) {
-				payment = paymentRepository.save(payment);
-			}
+		Optional<Backer> odbBacker = backerRepository.findById(backer.getId());
+		if (odbBacker.isPresent()) {
+			Backer dbBacker = odbBacker.get();
+			if (backer.getPaymentIds() != null) dbBacker.getPaymentIds().addAll(backer.getPaymentIds());
+			if (backer.getAssetIds() != null) dbBacker.getAssetIds().addAll(backer.getAssetIds());
+			if (backer.getPerkIds() != null) dbBacker.getPerkIds().addAll(backer.getPerkIds());
+			return backerRepository.save(dbBacker);
+		} else {
+			return backerRepository.save(backer);
 		}
-		if (backer.getAssets() != null) {
-			for (Asset asset : backer.getAssets()) {
-				asset = assetRepository.findById(asset.getId()).get();
-			}
-		}
-		return backerRepository.save(backer);
 	}
 
 	@PostMapping(value = "/v2/backers")

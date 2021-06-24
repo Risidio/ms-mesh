@@ -98,7 +98,7 @@ squareup:
       redirectUrl: https://tapi.risidio.com/mesh/oauth-redirect
 radicle:
    stax:
-      base-path: http://139.162.204.44:20443
+      base-path: https://stacks-node-api.testnet.stacks.co
       sidecar-path: http://139.162.204.44:3999
       admin-contract-address: ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT
       admin-contract-name: appmap-v3

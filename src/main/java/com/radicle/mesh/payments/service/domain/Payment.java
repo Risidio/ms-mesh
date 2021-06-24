@@ -24,8 +24,10 @@ public class Payment {
 	@Id private String id;
 	private String projectId;
 	private String paymentType;
-	private MoneyModal amountMoney;
-	private MoneyModal totalMoney;
+	private Money amountMoney;
+	private Money totalMoney;
+	private String paymentAddress;
+	private String sendingAddress;
 	private String createdAt;
 	private String squareId;
 	private String customerId;

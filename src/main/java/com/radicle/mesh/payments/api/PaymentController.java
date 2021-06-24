@@ -42,7 +42,19 @@ public class PaymentController {
 		List<Payment> payments = paymentRepository.findAll();
 		return payments;
 	}
-	
+
+	@GetMapping(value = "/v2/payments/{projectId}/{paymentType}")
+	public List<Payment> findByProjectIdAndPaymentType(@PathVariable String projectId, @PathVariable String paymentType) {
+		List<Payment> payments = paymentRepository.findByProjectIdAndPaymentType(projectId, paymentType);
+		return payments;
+	}
+
+	@GetMapping(value = "/v2/payments/{projectId}")
+	public List<Payment> findByProjectId(@PathVariable String projectId) {
+		List<Payment> payments = paymentRepository.findByProjectId(projectId);
+		return payments;
+	}
+
 	@PostMapping(value = "/v2/payment")
 	public Payment post(HttpServletRequest request, @RequestBody Payment payment) {
 		return paymentRepository.save(payment);

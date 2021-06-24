@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias(value = "Asset")
+@TypeAlias(value = "DonationData")
 @Document
 public class Asset {
 

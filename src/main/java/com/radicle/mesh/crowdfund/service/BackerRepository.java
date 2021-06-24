@@ -12,8 +12,6 @@ public interface BackerRepository extends MongoRepository<Backer, String> {
 
 	Optional<Backer> findByStxAddress(String keyValue);
 
-	Optional<Backer> findByEmail(String keyValue);
-
 	Optional<Backer> findByUsername(String keyValue);
 
 }

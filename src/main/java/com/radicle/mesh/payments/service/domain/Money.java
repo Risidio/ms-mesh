@@ -15,10 +15,12 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "MoneyModal")
-public class MoneyModal {
+@TypeAlias(value = "ProjectPaymentTotals")
+public class Money {
 
-	private Integer amount;
+	private Float amountStx;
+	private Long amountBtc;
+	private Long amount;
 	private String currency;
 
 }
