@@ -2,7 +2,8 @@ package com.radicle.mesh.crowdfund.api.model;
 
 import org.springframework.data.annotation.TypeAlias;
 
-import com.radicle.mesh.payments.api.model.ProjectPaymentTotals;
+import com.radicle.mesh.crowdfund.service.domain.crowdfund.Asset;
+import com.radicle.mesh.payments.service.domain.Payment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,10 +18,11 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias(value = "CrowdfundTarget")
-public class CrowdfundTarget {
+@TypeAlias(value = "BackerTransactionData")
+public class BackerTransactionData {
 
-	private ProjectPaymentTotals projectPaymentTotals;
-	private BackerData backerData;
+	private Asset perk;
+	private Asset asset;
+	private Payment payment;
 	
 }

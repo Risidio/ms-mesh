@@ -1,8 +1,5 @@
 package com.radicle.mesh.payments.api;
 
-import java.util.List;
-import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.radicle.mesh.payments.api.model.ProjectPaymentTotals;
 import com.radicle.mesh.payments.service.PaymentRepository;
+import com.radicle.mesh.payments.service.PaymentService;
 import com.radicle.mesh.payments.service.domain.Payment;
 
 @RestController
@@ -29,34 +28,38 @@ public class PaymentController {
 
     private static final Logger logger = LogManager.getLogger(PaymentController.class);
 	@Autowired
+	private PaymentService paymentService;
+	@Autowired
 	private PaymentRepository paymentRepository;
 
-	@GetMapping(value = "/v2/payment/{id}")
-	public Optional<Payment> paymentById(@PathVariable String id) {
-		Optional<Payment> o = paymentRepository.findById(id);
-		return o;
-	}
+//	@GetMapping(value = "/v2/payment/{id}")
+//	public Optional<Payment> paymentById(@PathVariable String id) {
+//		Optional<Payment> o = paymentRepository.findById(id);
+//		return o;
+//	}
 	
-	@GetMapping(value = "/v2/payments")
-	public List<Payment> findAll() {
-		List<Payment> payments = paymentRepository.findAll();
-		return payments;
-	}
+//	@GetMapping(value = "/v2/payments")
+//	public List<Payment> findAll() {
+//		List<Payment> payments = paymentRepository.findAll();
+//		return payments;
+//	}
 
-	@GetMapping(value = "/v2/payments/{projectId}/{paymentType}")
-	public List<Payment> findByProjectIdAndPaymentType(@PathVariable String projectId, @PathVariable String paymentType) {
-		List<Payment> payments = paymentRepository.findByProjectIdAndPaymentType(projectId, paymentType);
-		return payments;
-	}
+//	@GetMapping(value = "/v2/payments/{projectId}/{paymentType}")
+//	public List<Payment> findByProjectIdAndPaymentType(@PathVariable String projectId,
+//			@PathVariable String paymentType) {
+//		List<Payment> payments = paymentRepository.findByProjectIdAndPaymentType(projectId, paymentType);
+//		return payments;
+//	}
 
 	@GetMapping(value = "/v2/payments/{projectId}")
-	public List<Payment> findByProjectId(@PathVariable String projectId) {
-		List<Payment> payments = paymentRepository.findByProjectId(projectId);
-		return payments;
+	public ProjectPaymentTotals getProjectPaymentTotals(@PathVariable String projectId) {
+		ProjectPaymentTotals ppt = paymentService.getProjectPaymentTotals(projectId);
+		return ppt;
 	}
 
 	@PostMapping(value = "/v2/payment")
 	public Payment post(HttpServletRequest request, @RequestBody Payment payment) {
+		paymentRepository.save(payment);
 		return paymentRepository.save(payment);
 	}
 

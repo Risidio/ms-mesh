@@ -26,6 +26,7 @@ public class Crowdfund {
 
 	@Id private String id;
 	private String projectId;
+	private Long cfEndTime;
 	private String name;
 	private String description;
 	private Money target;
