@@ -83,9 +83,9 @@ public class ContractReader {
 				}
 			}
 		}
-		registry = appMapContract;
+		this.registry = appMapContract;
 		// logger.info("Applications -> registry -> " + registry);
-		return registry;
+		return this.registry;
 	}
 
 	public Application read(AppMapContract appMapContract, String contractId) throws JsonProcessingException {
@@ -184,6 +184,17 @@ public class ContractReader {
 				readMetaData(application, token);
 			}
 		}
+	}
+	
+	public Token readSpecificToken(Application application, Long nftIndex) throws JsonMappingException, JsonProcessingException {
+		TokenContract tokenContract = application.getTokenContract();
+		Token token = readToken(application, nftIndex);
+		if (token != null) {
+			// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
+			tokenContract.addToken(token);
+			readMetaData(application, token);
+		}
+		return token;
 	}
 	
 	@Async

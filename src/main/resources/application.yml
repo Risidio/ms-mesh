@@ -27,6 +27,8 @@ radicle:
       enable-csrf: false
    gaia:
       huburl: https://core.blockstack.org/v1/users/
+   search:
+      indexurl: http://docker.for.mac.localhost:8048/index/indexMetaData
    mongo:
       mongoIp: mongodb://mongodb
       mongoPort: 27017
@@ -97,6 +99,8 @@ squareup:
       applicationName: rpay-prom
       redirectUrl: https://tapi.risidio.com/mesh/oauth-redirect
 radicle:
+   search:
+      indexurl: http://172.17.0.1:8046/index/indexMetaData
    stax:
       base-path: https://stacks-node-api.testnet.stacks.co
       sidecar-path: http://139.162.204.44:3999
@@ -122,6 +126,8 @@ opennode:
       apiEndpoint: https://api.opennode.com
       appEndpoint: https://app.opennode.com
 radicle:
+   search:
+      indexurl: http://172.17.0.1:8046/index/indexMetaData
    stax:
       base-path: http://178.79.138.62:20443
       sidecar-path: http://178.79.138.62:3999

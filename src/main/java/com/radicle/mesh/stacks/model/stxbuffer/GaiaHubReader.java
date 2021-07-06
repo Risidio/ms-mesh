@@ -43,6 +43,7 @@ public class GaiaHubReader {
 
     private static final Logger logger = LogManager.getLogger(GaiaHubReader.class);
 	@Value("${radicle.gaia.huburl}") String basePath;
+	@Value("${radicle.search.indexurl}") String indexUrl;
 	@Autowired private RestOperations restTemplate;
 	@Autowired private ObjectMapper mapper;
 	private Map<String, UserAppMaps> readUrls = new HashMap<>();
@@ -66,8 +67,10 @@ public class GaiaHubReader {
 		try {
 			HttpEntity he = new HttpEntity<String>(new HttpHeaders());
 			HttpEntity<String> response = restTemplate.exchange(metaDataUrl, HttpMethod.GET, he, String.class);
-			contractData.put(token.getTokenInfo().getAssetHash(), response.getBody());
+			String assetJson = response.getBody();
+			contractData.put(token.getTokenInfo().getAssetHash(), assetJson);
 			metaData.put(application.getContractId(), contractData);
+			sendToSearch(assetJson);
 		} catch (RestClientException e) {
 			logger.error("Nothing found at: " + metaDataUrl);
 		}
@@ -98,6 +101,15 @@ public class GaiaHubReader {
 		String response = readFromStacks(path);
 		UserAppMaps uam = parseApps(response, gaiaUsername);
 		readUrls.put(gaiaUsername, uam);
+	}
+	
+	private String sendToSearch(String jsonBlob) throws JsonProcessingException {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> requestEntity = new HttpEntity<String>(jsonBlob, headers);
+		
+		ResponseEntity<String> response = restTemplate.exchange(indexUrl, HttpMethod.POST, requestEntity, String.class);
+		return response.getBody();
 	}
 	
 	private String readFromStacks(String path) throws JsonProcessingException {

@@ -10,6 +10,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -37,6 +39,7 @@ import com.radicle.mesh.stacks.model.Shaker;
 import com.radicle.mesh.stacks.model.stxbuffer.ContractReader;
 import com.radicle.mesh.stacks.model.stxbuffer.types.AppMapContract;
 import com.radicle.mesh.stacks.model.stxbuffer.types.Application;
+import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdate;
 import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
 
 @RestController
@@ -46,6 +49,7 @@ import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
 public class StaxController {
 
 	@Autowired private RestOperations restTemplate;
+	private static final Logger logger = LogManager.getLogger(StaxController.class);
 	@Value("${radicle.stax.base-path}") String basePath;
 	@Value("${radicle.stax.sidecar-path}") String sidecarPath;
 	@Autowired private ObjectMapper mapper;
@@ -107,6 +111,14 @@ public class StaxController {
 		return new Shaker();
 	}
 
+	@PostMapping(value = "/v2/register/cacheUpdate")
+	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
+		Application application = getApplication(cacheUpdate.getContractId());
+		Token token = contractReader.readSpecificToken(application, cacheUpdate.getNftIndex());
+		logger.info("Updated cached token: " + token.toString());
+		return token;
+	}
+
 	private Application getApplication(String contractId) {
 		AppMapContract registry = contractReader.getRegistry();
 		if (registry == null || registry.getApplications() == null) return null;
@@ -133,6 +145,21 @@ public class StaxController {
 			}
 		}
 		return token;
+	}
+
+	private Token getToken(String contractId, Long nftIndex) {
+		AppMapContract registry = contractReader.getRegistry();
+		if (registry == null || registry.getApplications() == null) return null;
+		for (Application a : registry.getApplications()) {
+			if (a.getContractId().contentEquals(contractId)) {
+				for (Token t : a.getTokenContract().getTokens()) {
+					if (t.getTokenInfo() != null && t.getNftIndex() == nftIndex) {
+						return t;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	@GetMapping(value = "/v2/registry")
@@ -170,6 +197,11 @@ public class StaxController {
 		indexes.add(assetHash);
 		contractIdNftIndexes.put(contractId, indexes);
 		return getToken(contractId, assetHash);
+	}
+
+	@GetMapping(value = "/v2/registry/{contractId}/{nftIndex}")
+	public Token getAssetByNftIndex(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long nftIndex) {
+		return getToken(contractId, nftIndex);
 	}
 
 	@PostMapping(value = "/v2/accounts")

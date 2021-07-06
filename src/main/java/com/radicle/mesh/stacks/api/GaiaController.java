@@ -50,7 +50,7 @@ public class GaiaController {
 				if (tc.getTokens() != null) {
 					for (Token token : tc.getTokens()) {
 						// gaiaHubReader.read(a.getAppOrigin(), a.getGaiaFilename(), gaiaUsername);
-						// gaiaHubReader.read(a, token);
+						gaiaHubReader.read(a, token);
 					}
 				}
 			}
