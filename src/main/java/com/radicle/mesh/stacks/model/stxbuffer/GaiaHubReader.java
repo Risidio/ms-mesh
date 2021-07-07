@@ -70,7 +70,7 @@ public class GaiaHubReader {
 			String assetJson = response.getBody();
 			contractData.put(token.getTokenInfo().getAssetHash(), assetJson);
 			metaData.put(application.getContractId(), contractData);
-			sendToSearch(assetJson);
+			sendToSearch(application.getContractId(), assetJson);
 		} catch (RestClientException e) {
 			logger.error("Nothing found at: " + metaDataUrl);
 		}
@@ -103,12 +103,12 @@ public class GaiaHubReader {
 		readUrls.put(gaiaUsername, uam);
 	}
 	
-	private String sendToSearch(String jsonBlob) throws JsonProcessingException {
+	private String sendToSearch(String projectId, String jsonBlob) throws JsonProcessingException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> requestEntity = new HttpEntity<String>(jsonBlob, headers);
 		
-		ResponseEntity<String> response = restTemplate.exchange(indexUrl, HttpMethod.POST, requestEntity, String.class);
+		ResponseEntity<String> response = restTemplate.exchange(indexUrl + projectId, HttpMethod.POST, requestEntity, String.class);
 		return response.getBody();
 	}
 	

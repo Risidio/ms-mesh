@@ -25,7 +25,7 @@ public class Perk {
 	private Integer status;
 	private String name;
 	private String description;
-	private String imageUrl;
+	private String image;
 	private String type;
 
 }

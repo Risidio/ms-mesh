@@ -35,9 +35,8 @@ public class Asset {
 	private String owner;
 	private String uploader;
 	private String assetHash;
-	private String imageUrl;
-	private String assetUrl;
-	private String assetProjectUrl;
+	private String image;
+	private String externalUrl;
 	private String metaDataUrl;
 	private String privacy;
 	private String artist;
@@ -48,7 +47,7 @@ public class Asset {
 	private List<KeywordModel> keywords;
 	private String status;
 	private Long tokenId;
-	private NftMedia nftMedia;
+	private Attributes attributes;
 	private Inventory inventory;
 	
 }

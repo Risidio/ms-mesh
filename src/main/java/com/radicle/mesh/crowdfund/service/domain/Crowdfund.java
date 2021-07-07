@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.radicle.mesh.crowdfund.service.domain.crowdfund.NftMedia;
+import com.radicle.mesh.crowdfund.service.domain.crowdfund.Attributes;
 import com.radicle.mesh.payments.service.domain.Money;
 
 import lombok.AllArgsConstructor;
@@ -31,5 +31,5 @@ public class Crowdfund {
 	private String description;
 	private Money target;
 	private Money runningTotal;
-	private NftMedia nftMedia;
+	private Attributes attributes;
 }
