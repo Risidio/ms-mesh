@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,8 +59,18 @@ public class OffChainPurchaseController {
 	}
 
 	@GetMapping(value = "/v2/fetch/transactions")
-	public List<StacksTransaction> fetchTransaction(HttpServletRequest request) {
+	public List<StacksTransaction> fetchTransactions(HttpServletRequest request) {
 		return stacksTransactionRepository.findAll();
+	}
+
+	@GetMapping(value = "/v2/fetch/transactions/{assetHash}")
+	public List<StacksTransaction> fetchTransactions(HttpServletRequest request, @PathVariable String assetHash) {
+		return stacksTransactionRepository.findByAssetHash(assetHash);
+	}
+
+	@GetMapping(value = "/v2/fetch/transactions/{assetHash}/{functionName}")
+	public List<StacksTransaction> fetchTransactions(HttpServletRequest request, @PathVariable String assetHash, @PathVariable String functionName) {
+		return stacksTransactionRepository.findByAssetHashAndType(assetHash, functionName);
 	}
 
 	@GetMapping(value = "/v2/fetch/offers")
