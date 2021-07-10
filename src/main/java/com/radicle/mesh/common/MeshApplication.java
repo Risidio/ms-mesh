@@ -42,11 +42,24 @@ public class MeshApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("*");
+				registry.addMapping("/**").allowedOrigins("*")
+				.allowedHeaders(new String[] {"IdentityAddress", "authorization", "content-type", "x-auth-token"})
+				.exposedHeaders(new String[] {"IdentityAddress", "authorization", "content-type", "x-auth-token"});
 			}
 		};
 	}
-
+//	@Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(Arrays.asList("IdentityAddress", "authorization", "content-type", "x-auth-token"));
+//        configuration.setExposedHeaders(Arrays.asList("IdentityAddress", "authorization", "content-type", "x-auth-token"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//	}
+	
 	@Bean
 	public SquareClient squareClient() {
 		com.squareup.square.Environment sqenv = com.squareup.square.Environment.PRODUCTION;

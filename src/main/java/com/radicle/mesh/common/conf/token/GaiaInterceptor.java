@@ -1,5 +1,6 @@
 package com.radicle.mesh.common.conf.token;
 
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,15 +44,23 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		try {
 			if (handler instanceof HandlerMethod) {
 				String path = request.getRequestURI();
+				String address = null;
 				if (isProtected(request, path)) {
 					logger.info("Protected domain: " + path);
-					String address = response.getHeader(Identity_Address);
-					String authToken = response.getHeader(AUTHORIZATION);
+					Enumeration<String> headers = request.getHeaderNames();
+					while (headers.hasMoreElements()) {
+						String header = headers.nextElement();
+						logger.info("header: " + header);
+						address = header;
+					}
+					String authToken = request.getHeader(AUTHORIZATION);
 					if (authToken == null) {
 						address = request.getHeader(Identity_Address);
 						authToken = request.getHeader(AUTHORIZATION);
 						if (authToken == null) {
-							throw new Exception("Failed validation - no auth token");
+							// throw new Exception("Failed validation - no auth token");
+							request.getSession().setAttribute("USERNAME", "unknown");
+							return HandlerInterceptor.super.preHandle(request, response, handler);
 						}
 					}
 					authToken = authToken.split(" ")[1]; // stripe out Bearer string before passing along..
@@ -87,6 +96,9 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		boolean protectd = false;
 		if (request.getMethod().equalsIgnoreCase("POST") || request.getMethod().equalsIgnoreCase("GET")) {
 			String apiKey = request.getHeader(API_KEY);
+			if (path.startsWith("/mesh/v2/")) {
+				protectd = true;
+			}
 			if (path.startsWith("/mesh/v2/secure/")) {
 				protectd = true;
 			}
