@@ -44,15 +44,14 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		try {
 			if (handler instanceof HandlerMethod) {
 				String path = request.getRequestURI();
-				String address = null;
 				if (isProtected(request, path)) {
 					logger.info("Protected domain: " + path);
 					Enumeration<String> headers = request.getHeaderNames();
 					while (headers.hasMoreElements()) {
 						String header = headers.nextElement();
-						logger.info("header: " + header);
-						address = header;
+						// logger.info("header: " + header);
 					}
+					String address = response.getHeader(Identity_Address);
 					String authToken = request.getHeader(AUTHORIZATION);
 					if (authToken == null) {
 						address = request.getHeader(Identity_Address);
