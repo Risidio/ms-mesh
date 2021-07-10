@@ -44,6 +44,12 @@ public class AuthorisationController {
 		return authorisation;
 	}
 
+	@GetMapping(value = "/v2/secure/auth/getAuthorisations")
+	public List<Authorisation> getAuthorisations(HttpServletRequest request) throws JsonProcessingException {
+		List<Authorisation> authorisations = authorisationRepository.findAll();
+		return authorisations;
+	}
+
 	@GetMapping(value = "/v2/auth/getAuthConfig")
 	public List<AuthConfig> getAuthConfig(HttpServletRequest request, @PathVariable String stxAddress) throws JsonProcessingException {
 		List<AuthConfig> authConfigs = authConfigRepository.findAll();

@@ -64,12 +64,14 @@ public class GaiaInterceptor implements HandlerInterceptor {
 					}
 					authToken = authToken.split(" ")[1]; // stripe out Bearer string before passing along..
 					UserTokenAuthentication v1Authentication = UserTokenAuthentication.getInstance(authToken);
-					boolean auth = v1Authentication.isAuthenticationValid(address);
-					String username = v1Authentication.getUsername();
-					logger.info("Protected domain: request from " + username + " and auth is " + auth);
-					if (!auth) {
-						throw new Exception("Failed validation of jwt token");
+					boolean auth;
+					try {
+						auth = v1Authentication.isAuthenticationValid(address);
+					} catch (Exception e) {
+						logger.info("Unable to verify token. Is identity address present as custom header? Identity Address: " + address);
 					}
+					String username = v1Authentication.getUsername();
+					logger.info("Protected domain: request from " + username);
 					if (!isWhitelisted(username)) {
 						throw new Exception("Not allowed");
 					}
