@@ -23,7 +23,7 @@ public class Authorisation {
 	private Boolean whitelisted;
 	private String stxAddress;
 	private List<Domain> domains;
-	private String[] roles;
+	private List<String> roles;
 	
 	public boolean hasPrivilege(String origin, String searchPrivilege) {
 		boolean found = false;
@@ -35,5 +35,15 @@ public class Authorisation {
 			}
 		}
 		return found;
+	}
+	
+	public boolean isWhitelisted(String protectedResource) {
+		if (roles.contains("admin")) {
+			return true;
+		}
+		if (protectedResource != null && protectedResource.indexOf(ch)) {
+			return true;
+		}
+		return false;
 	}
 }

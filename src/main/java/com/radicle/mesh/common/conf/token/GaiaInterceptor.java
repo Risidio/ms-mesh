@@ -9,10 +9,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.AbstractHandlerMapping;
+
+import com.radicle.mesh.privilege.service.AuthorisationRepository;
+import com.radicle.mesh.privilege.service.domain.Authorisation;
 
 @Component
 public class GaiaInterceptor implements HandlerInterceptor {
@@ -37,7 +41,9 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		whitelist.add("mijoco.id.blockstack");
 		whitelist.add("mike.personal.id");
 	}
-	
+	@Autowired
+	private AuthorisationRepository authorisationRepository;
+
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -70,12 +76,14 @@ public class GaiaInterceptor implements HandlerInterceptor {
 					} catch (Exception e) {
 						logger.info("Unable to verify token. Is identity address present as custom header? Identity Address: " + address);
 					}
-					String username = v1Authentication.getUsername();
-					logger.info("Protected domain: request from " + username);
-					if (!isWhitelisted(username)) {
+					String stxAddress = v1Authentication.getUsername();
+					logger.info("Protected domain: request from " + stxAddress);
+					Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
+					if (!authorisation.getWhitelisted(stxAddress)) {
 						throw new Exception("Not allowed");
 					}
-					request.getSession().setAttribute("USERNAME", username);
+					request.getSession().setAttribute("username", stxAddress);
+					request.getSession().setAttribute("authorisation", authorisation);
 				}
 			} else if (handler instanceof AbstractHandlerMapping) {
 				// error occurred..
@@ -89,8 +97,8 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		return HandlerInterceptor.super.preHandle(request, response, handler);
 	}
 	
-	private boolean isWhitelisted(String username) {
-		return whitelist.contains(username);
+	private boolean isWhitelisted(String stxAddress) {
+		return whitelist.contains(stxAddress);
 	}
 	
 	private boolean isProtected(HttpServletRequest request, String path) {

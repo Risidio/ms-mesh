@@ -64,6 +64,7 @@ public class AuthorisationController {
 	@GetMapping(value = "/v2/auth/isAuthorised/{stxAddress}/{domain}/{privilege}")
 	public Boolean isAuthorised(HttpServletRequest request, @PathVariable String stxAddress, @PathVariable String domain, @PathVariable String privilege) throws JsonProcessingException {
 		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
+		if (authorisation == null) return false;
 		return authorisation.hasPrivilege(domain, privilege);
 	}
 

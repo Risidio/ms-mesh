@@ -42,8 +42,12 @@ public class UserTokenAuthentication {
 			logger.info("JWT claims issuer: " + this.claims.getIssuer());
 			logger.info("JWT claims: " + this.claims.getSubject());
 		} catch (Exception e) {
-			logger.error("Error token: " + token, e);
-			throw new RuntimeException("Failed to decode authentication token: " + token);
+			if (token != null && token.length() > 10 && token.length() < 100) {
+				logger.info("JWT is Stacks address: " + this.token);
+			} else {
+				logger.error("Error token: " + token, e);
+				throw new RuntimeException("Failed to decode authentication token: " + token);
+			}
 		}
 	}
 	
@@ -76,6 +80,7 @@ public class UserTokenAuthentication {
 	}
 
 	public String getUsername() throws ParseException {
+		if (this.claims == null) return this.token;
 		return this.claims.getStringClaim("username");
 	}
 
