@@ -67,6 +67,7 @@ public class ContractReader {
 		return registry;
 	}
 
+	// @Async
 	public AppMapContract read() throws JsonProcessingException {
 		AppMapContract appMapContract = new AppMapContract();
 		appMapContract.setAdminContractAddress(adminContractAddress);

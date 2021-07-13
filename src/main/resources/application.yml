@@ -102,7 +102,7 @@ radicle:
    search:
       indexurl: http://172.17.0.1:8046/index/indexMetaData/
    stax:
-      base-path: https://stacks-node-api.testnet.stacks.co
+      base-path: http://139.162.204.44:20443
       sidecar-path: http://139.162.204.44:3999
       admin-contract-address: ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT
       admin-contract-name: appmap-v3

@@ -20,10 +20,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +45,7 @@ import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
 @RestController
 @EnableAsync
 @EnableScheduling
-@CrossOrigin(origins = { "*" }, maxAge = 6000)
+// @CrossOrigin(origins = { "http://api.risidio.local", "https://tapi.risidio.com", "https://api.risidio.com", "http://localhost:8085", "http://localhost:8082", "http://localhost:8080", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
 public class StaxController {
 
 	@Autowired private RestOperations restTemplate;
@@ -111,6 +111,7 @@ public class StaxController {
 		return new Shaker();
 	}
 
+	@Async
 	@PostMapping(value = "/v2/register/cacheUpdate")
 	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
 		Application application = getApplication(cacheUpdate.getContractId());

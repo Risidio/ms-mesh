@@ -5,9 +5,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
-/**
- * @author Josh Cummings
- */
 @EnableWebSecurity
 public class WebServerSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -23,7 +20,7 @@ public class WebServerSecurityConfiguration extends WebSecurityConfigurerAdapter
         {
           http.csrf().disable();
         }
-		http
+    	http.cors().and()
 			.authorizeRequests(authorizeRequests ->
 				authorizeRequests
 					//.antMatchers(HttpMethod.OPTIONS, "/buy-now/**").permitAll()
