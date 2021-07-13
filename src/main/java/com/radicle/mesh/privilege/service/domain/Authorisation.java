@@ -41,9 +41,9 @@ public class Authorisation {
 		if (roles.contains("admin")) {
 			return true;
 		}
-		if (protectedResource != null && protectedResource.indexOf(ch)) {
-			return true;
+		if (protectedResource != null && protectedResource.indexOf("/secure") > -1) {
+			return false;
 		}
-		return false;
+		return true;
 	}
 }
