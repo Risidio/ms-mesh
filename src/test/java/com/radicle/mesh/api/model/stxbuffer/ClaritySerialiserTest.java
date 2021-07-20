@@ -6,8 +6,8 @@ import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.radicle.mesh.stacks.model.stxbuffer.ClaritySerialiser;
-import com.radicle.mesh.stacks.model.stxbuffer.ClarityType;
+import com.radicle.mesh.stacks.service.ClaritySerialiser;
+import com.radicle.mesh.stacks.service.ClarityType;
 
 class ClaritySerialiserTest {
 	                                           //           0123456789012345678901234567890123456789

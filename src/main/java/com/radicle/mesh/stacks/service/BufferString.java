@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.model.stxbuffer;
+package com.radicle.mesh.stacks.service;
 
 import org.springframework.data.annotation.TypeAlias;
 

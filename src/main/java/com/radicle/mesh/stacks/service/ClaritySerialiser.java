@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.model.stxbuffer;
+package com.radicle.mesh.stacks.service;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;

@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.model.stxbuffer;
+package com.radicle.mesh.stacks.service;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -23,12 +23,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.stacks.model.PostData;
 import com.radicle.mesh.stacks.model.Principal;
-import com.radicle.mesh.stacks.model.stxbuffer.types.AppMapContract;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Application;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Bid;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Offer;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
-import com.radicle.mesh.stacks.model.stxbuffer.types.TokenContract;
+import com.radicle.mesh.stacks.service.domain.AppMapContract;
+import com.radicle.mesh.stacks.service.domain.Application;
+import com.radicle.mesh.stacks.service.domain.Bid;
+import com.radicle.mesh.stacks.service.domain.Offer;
+import com.radicle.mesh.stacks.service.domain.Token;
+import com.radicle.mesh.stacks.service.domain.TokenContract;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,6 +61,8 @@ public class ContractReader {
 	@Autowired private ClarityDeserialiser clarityDeserialiser;
 	@Autowired private ClaritySerialiser claritySerialiser;
 	@Autowired private GaiaHubReader gaiaHubReader;
+	@Autowired private AppMapContractRepository appMapContractRepository;
+	@Autowired private ApplicationRepository applicationRepository;
 	private AppMapContract registry;
 
 	public AppMapContract getRegistry() {
@@ -68,11 +70,15 @@ public class ContractReader {
 	}
 
 	// @Async
-	public AppMapContract read() throws JsonProcessingException {
-		AppMapContract appMapContract = new AppMapContract();
+	public AppMapContract buildCache() throws JsonProcessingException {
+		AppMapContract appMapContract = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
+		if (appMapContract == null) {
+			appMapContract = new AppMapContract();
+		}
 		appMapContract.setAdminContractAddress(adminContractAddress);
 		appMapContract.setAdminContractName(adminContractName);
 		readAppMap(appMapContract, adminContractAddress + "." + adminContractName, ReadOnlyFunctionNames.GET_CONTRACT_DATA);
+		appMapContractRepository.save(appMapContract);
 		readApplications(appMapContract);
 		List<Application> applications = appMapContract.getApplications();
 		if (applications != null) {
@@ -82,10 +88,10 @@ public class ContractReader {
 					readTokenContract(application);
 					readTokens(application);
 				}
+				appMapContractRepository.save(appMapContract);
 			}
 		}
 		this.registry = appMapContract;
-		// logger.info("Applications -> registry -> " + registry);
 		return this.registry;
 	}
 
@@ -161,6 +167,11 @@ public class ContractReader {
 			String response = readFromStacks(path, new String[] {arg1});
 			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
+			Application aFromDb = applicationRepository.findByContractId(a.getContractId());
+			if (aFromDb != null) {
+				a.setId(aFromDb.getId());
+			}
+			applicationRepository.save(a);
 			if (a != null && a.getStatus() > -1) appMapContract.addApplication(a);
 		}
 	}
@@ -190,6 +201,20 @@ public class ContractReader {
 	public Token readSpecificToken(Application application, Long nftIndex) throws JsonMappingException, JsonProcessingException {
 		TokenContract tokenContract = application.getTokenContract();
 		Token token = readToken(application, nftIndex);
+		if (token != null) {
+			// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
+			tokenContract.addToken(token);
+			readMetaData(application, token);
+		}
+		return token;
+	}
+	
+	public Token readSpecificToken(Application application, String assetHash) throws JsonMappingException, JsonProcessingException {
+		TokenContract tokenContract = application.getTokenContract();
+		if (tokenContract == null) {
+			tokenContract = new TokenContract();
+		}
+		Token token = readToken(application, assetHash);
 		if (token != null) {
 			// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 			tokenContract.addToken(token);

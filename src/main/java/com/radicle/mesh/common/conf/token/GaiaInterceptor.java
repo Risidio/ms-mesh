@@ -79,11 +79,13 @@ public class GaiaInterceptor implements HandlerInterceptor {
 					String stxAddress = v1Authentication.getUsername();
 					logger.info("Protected domain: request from " + stxAddress);
 					Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
-					if (!authorisation.getWhitelisted(stxAddress)) {
-						throw new Exception("Not allowed");
+//					if (authorisation != null  && !authorisation.isWhitelisted(stxAddress)) {
+//						throw new RuntimeException("Not allowed");
+//					}
+					if (authorisation != null) {
+						request.getSession().setAttribute("authorisation", authorisation);
 					}
 					request.getSession().setAttribute("username", stxAddress);
-					request.getSession().setAttribute("authorisation", authorisation);
 				}
 			} else if (handler instanceof AbstractHandlerMapping) {
 				// error occurred..
@@ -97,36 +99,12 @@ public class GaiaInterceptor implements HandlerInterceptor {
 		return HandlerInterceptor.super.preHandle(request, response, handler);
 	}
 	
-	private boolean isWhitelisted(String stxAddress) {
-		return whitelist.contains(stxAddress);
-	}
-	
 	private boolean isProtected(HttpServletRequest request, String path) {
 		boolean protectd = false;
 		if (request.getMethod().equalsIgnoreCase("POST") || request.getMethod().equalsIgnoreCase("GET")) {
-			String apiKey = request.getHeader(API_KEY);
 			if (path.startsWith("/mesh/v2/")) {
 				protectd = true;
 			}
-			if (path.startsWith("/mesh/v2/secure/")) {
-				protectd = true;
-			}
-			if (path.startsWith("/mesh/v1/shaker")) {
-				protectd = true;
-			}
-			if (apiKey != null && !apiKey.startsWith(BLOCKSTACK)) {
-				protectd = false;
-			}
-		}
-		return protectd;
-	}
-	
-	private boolean isProtected(String path) {
-		boolean protectd = path.startsWith("/bitcoin") || path.startsWith("/lightning") || path.startsWith("/payment");
-		if (ALLOWED_PATHS.indexOf(path) > -1) {
-			protectd = false;
-		} else if (path.startsWith(ALLOWED_PATH_BTC) || path.startsWith(ALLOWED_PATH_LND) || path.startsWith(ALLOWED_PATH_INV)) {
-			protectd = false;
 		}
 		return protectd;
 	}

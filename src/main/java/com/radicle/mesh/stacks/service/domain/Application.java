@@ -1,11 +1,13 @@
-package com.radicle.mesh.stacks.model.stxbuffer.types;
+package com.radicle.mesh.stacks.service.domain;
 
 import java.math.BigInteger;
 import java.util.Map;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.radicle.mesh.stacks.model.stxbuffer.ClarityType;
+import com.radicle.mesh.stacks.service.ClarityType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +23,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeAlias(value = "Application")
+@Document
 public class Application {
 	
+	@Id private String id;
 	private String contractId;
 	private String owner;
 	private Long appIndex;

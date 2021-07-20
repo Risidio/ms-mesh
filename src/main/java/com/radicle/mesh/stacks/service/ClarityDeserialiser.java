@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.model.stxbuffer;
+package com.radicle.mesh.stacks.service;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.radicle.mesh.stacks.model.stxbuffer.StacksResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -11,10 +11,10 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-@TypeAlias(value = "AuthConfig")
-public class AuthConfig {
+@TypeAlias(value = "Privilege")
+public class Privilege {
 
-	public String configType;
-	public String configValue;
+	public String name;
+	public Integer level;
 	
 }

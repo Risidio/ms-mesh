@@ -18,8 +18,8 @@ import com.radicle.mesh.numberone.OffChainOfferRepository;
 import com.radicle.mesh.numberone.RegistrationRepository;
 import com.radicle.mesh.numberone.domain.OffChainOffer;
 import com.radicle.mesh.numberone.domain.Registration;
-import com.radicle.mesh.stacks.model.stxbuffer.types.StacksTransaction;
 import com.radicle.mesh.stacks.service.StacksTransactionRepository;
+import com.radicle.mesh.stacks.service.domain.StacksTransaction;
 
 @RestController
 @EnableAsync
@@ -68,21 +68,12 @@ public class OffChainPurchaseController {
 	}
 
 	@GetMapping(value = "/v2/fetch/transactions/{assetHash}/{functionName}")
-	public List<StacksTransaction> fetchTransactions(HttpServletRequest request, @PathVariable String assetHash, @PathVariable String functionName) {
+	public List<StacksTransaction> fetchTransactions(HttpServletRequest request, @PathVariable String assetHash,
+			@PathVariable String functionName) {
 		return stacksTransactionRepository.findByAssetHashAndType(assetHash, functionName);
 	}
 
 	@GetMapping(value = "/v2/fetch/offers")
-	public List<OffChainOffer> fetchOffers(HttpServletRequest request) {
-		return offChainOfferRepository.findAll();
-	}
-
-	@GetMapping(value = "/v2/secure/fetch/transactions")
-	public List<StacksTransaction> fetchTransactionsSecure(HttpServletRequest request) {
-		return stacksTransactionRepository.findAll();
-	}
-
-	@GetMapping(value = "/v2/secure/fetch/offers")
 	public List<OffChainOffer> fetchOffersSecure(HttpServletRequest request) {
 		return offChainOfferRepository.findAll();
 	}

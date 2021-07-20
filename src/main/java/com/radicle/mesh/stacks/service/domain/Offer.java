@@ -1,11 +1,11 @@
-package com.radicle.mesh.stacks.model.stxbuffer.types;
+package com.radicle.mesh.stacks.service.domain;
 
 import java.math.BigInteger;
 import java.util.Map;
 
 import org.springframework.data.annotation.TypeAlias;
 
-import com.radicle.mesh.stacks.model.stxbuffer.ClarityType;
+import com.radicle.mesh.stacks.service.ClarityType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

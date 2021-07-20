@@ -1,6 +1,8 @@
-package com.radicle.mesh.stacks.model.stxbuffer.types;
+package com.radicle.mesh.stacks.service.domain;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,8 +16,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias(value = "StacksTransaction")
+@Document
 public class StacksTransaction {
 
+	@Id private String id;
 	private long timestamp;
 	private String contractId;
 	private String assetHash;

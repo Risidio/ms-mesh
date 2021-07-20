@@ -2,7 +2,9 @@ package com.radicle.mesh.privilege.service.domain;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,8 +20,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeAlias(value = "Authorisation")
+@Document
 public class Authorisation {
 
+	@Id private String id;
 	private Boolean whitelisted;
 	private String stxAddress;
 	private List<Domain> domains;
@@ -38,11 +42,8 @@ public class Authorisation {
 	}
 	
 	public boolean isWhitelisted(String protectedResource) {
-		if (roles.contains("admin")) {
+		if (roles != null && roles.contains("admin")) {
 			return true;
-		}
-		if (protectedResource != null && protectedResource.indexOf("/secure") > -1) {
-			return false;
 		}
 		return true;
 	}

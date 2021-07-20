@@ -23,11 +23,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.radicle.mesh.stacks.model.stxbuffer.ClarityDeserialiser;
-import com.radicle.mesh.stacks.model.stxbuffer.ClaritySerialiser;
-import com.radicle.mesh.stacks.model.stxbuffer.ContractReader;
-import com.radicle.mesh.stacks.model.stxbuffer.GaiaHubReader;
-import com.radicle.mesh.stacks.model.stxbuffer.types.AppMapContract;
+import com.radicle.mesh.stacks.service.ClarityDeserialiser;
+import com.radicle.mesh.stacks.service.ClaritySerialiser;
+import com.radicle.mesh.stacks.service.ContractReader;
+import com.radicle.mesh.stacks.service.GaiaHubReader;
+import com.radicle.mesh.stacks.service.domain.AppMapContract;
 import com.squareup.square.SquareClient;
 
 @SpringBootApplication
@@ -48,7 +48,7 @@ public class MeshApplication {
 				registry.addMapping("/**")
 				.allowCredentials(true)
 				.allowedMethods("GET", "HEAD", "POST", "PUT", "OPTIONS")
-				.allowedHeaders("*")
+				.allowedHeaders("http://localhost:8085", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087", "http://localhost:8088", "http://localhost:8089", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com")
 				.allowedOrigins("http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087", "http://localhost:8088", "http://localhost:8089", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com")
 				.exposedHeaders("IdentityAddress", "Authorization", "content-type", "x-auth-token");
 			}
@@ -57,7 +57,7 @@ public class MeshApplication {
 	@Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8085", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087", "http://localhost:8088", "http://localhost:8089", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("IdentityAddress", "Authorization", "content-type", "x-auth-token"));
         configuration.setExposedHeaders(Arrays.asList("IdentityAddress", "Authorization", "content-type", "x-auth-token"));

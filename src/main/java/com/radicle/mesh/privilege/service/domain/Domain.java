@@ -18,6 +18,7 @@ import lombok.ToString;
 @TypeAlias(value = "Domain")
 public class Domain {
 
+	private String host;
 	private String[] privileges;
 
 }

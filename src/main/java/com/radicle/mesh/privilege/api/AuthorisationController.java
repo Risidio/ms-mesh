@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.radicle.mesh.privilege.service.AuthConfigRepository;
 import com.radicle.mesh.privilege.service.AuthorisationRepository;
-import com.radicle.mesh.privilege.service.domain.AuthConfig;
+import com.radicle.mesh.privilege.service.PrivilegeRepository;
 import com.radicle.mesh.privilege.service.domain.Authorisation;
+import com.radicle.mesh.privilege.service.domain.Domain;
+import com.radicle.mesh.privilege.service.domain.Privilege;
 
 @RestController
 //@CrossOrigin(origins = { "http://localhost:8085", "http://localhost:8082", "http://localhost:8080", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
@@ -28,10 +29,11 @@ public class AuthorisationController {
 	@Autowired
 	private AuthorisationRepository authorisationRepository;
 	@Autowired
-	private AuthConfigRepository authConfigRepository;
+	private PrivilegeRepository privilegeRepository;
 
-	@PostMapping(value = "/v2/secure/auth/authorise")
-	public Authorisation authorise(HttpServletRequest request, @RequestBody Authorisation newAuthorisation) throws JsonMappingException, JsonProcessingException {
+	@PostMapping(value = "/v2/auth/authorise")
+	public Authorisation authorise(HttpServletRequest request, @RequestBody Authorisation newAuthorisation)
+			throws JsonMappingException, JsonProcessingException {
 		Authorisation authorisation = authorisationRepository.findByStxAddress(newAuthorisation.getStxAddress());
 		if (authorisation != null) {
 			authorisation.setDomains(newAuthorisation.getDomains());
@@ -43,28 +45,44 @@ public class AuthorisationController {
 		return authorisation;
 	}
 
-	@GetMapping(value = "/v2/secure/auth/getAuthorisations")
-	public List<Authorisation> getAuthorisations(HttpServletRequest request) throws JsonProcessingException {
+	@GetMapping(value = "/v2/auth/getAuthorisations")
+	public List<Authorisation> getAuthorisations(HttpServletRequest request) {
 		List<Authorisation> authorisations = authorisationRepository.findAll();
 		return authorisations;
 	}
 
-	@GetMapping(value = "/v2/auth/getAuthConfig")
-	public List<AuthConfig> getAuthConfig(HttpServletRequest request, @PathVariable String stxAddress) throws JsonProcessingException {
-		List<AuthConfig> authConfigs = authConfigRepository.findAll();
-		return authConfigs;
+	@GetMapping(value = "/v2/auth/getPrivileges")
+	public List<Privilege> getPrivileges(HttpServletRequest request) {
+		List<Privilege> privileges = privilegeRepository.findAll();
+		return privileges;
 	}
 
 	@GetMapping(value = "/v2/auth/getAuthorisation/{stxAddress}")
-	public Authorisation getAuthorisation(HttpServletRequest request, @PathVariable String stxAddress) throws JsonProcessingException {
+	public Authorisation getAuthorisation(HttpServletRequest request, @PathVariable String stxAddress)
+			throws JsonProcessingException {
 		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
 		return authorisation;
 	}
 
-	@GetMapping(value = "/v2/auth/isAuthorised/{stxAddress}/{domain}/{privilege}")
-	public Boolean isAuthorised(HttpServletRequest request, @PathVariable String stxAddress, @PathVariable String domain, @PathVariable String privilege) throws JsonProcessingException {
+	@GetMapping(value = "/v2/auth/getAuthorisation/{stxAddress}/{domain}")
+	public Domain getAuthorisation(HttpServletRequest request, @PathVariable String stxAddress, @PathVariable String domain)
+			throws JsonProcessingException {
 		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
-		if (authorisation == null) return false;
+		Domain d = null;
+		for (Domain dom : authorisation.getDomains()) {
+			if (dom.getHost().equals(domain)) {
+				d = dom;
+			}
+		}
+		return d;
+	}
+
+	@GetMapping(value = "/v2/auth/isAuthorised/{stxAddress}/{domain}/{privilege}")
+	public Boolean isAuthorised(HttpServletRequest request, @PathVariable String stxAddress,
+			@PathVariable String domain, @PathVariable String privilege) throws JsonProcessingException {
+		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
+		if (authorisation == null)
+			return false;
 		return authorisation.hasPrivilege(domain, privilege);
 	}
 

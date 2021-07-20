@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.model.stxbuffer;
+package com.radicle.mesh.stacks.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.stacks.model.stxbuffer.gaia.AppsModel;
 import com.radicle.mesh.stacks.model.stxbuffer.gaia.UserAppMaps;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Application;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
+import com.radicle.mesh.stacks.service.domain.Application;
+import com.radicle.mesh.stacks.service.domain.Token;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

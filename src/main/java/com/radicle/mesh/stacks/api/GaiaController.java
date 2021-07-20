@@ -18,17 +18,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.radicle.mesh.stacks.model.stxbuffer.ContractReader;
-import com.radicle.mesh.stacks.model.stxbuffer.GaiaHubReader;
-import com.radicle.mesh.stacks.model.stxbuffer.types.AppMapContract;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Application;
-import com.radicle.mesh.stacks.model.stxbuffer.types.Token;
-import com.radicle.mesh.stacks.model.stxbuffer.types.TokenContract;
+import com.radicle.mesh.stacks.service.ContractReader;
+import com.radicle.mesh.stacks.service.GaiaHubReader;
+import com.radicle.mesh.stacks.service.domain.AppMapContract;
+import com.radicle.mesh.stacks.service.domain.Application;
+import com.radicle.mesh.stacks.service.domain.Token;
+import com.radicle.mesh.stacks.service.domain.TokenContract;
 
 @RestController
 @EnableAsync
 @EnableScheduling
-//@CrossOrigin(origins = { "http://localhost:8085", "http://localhost:8082", "http://localhost:8080", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
+//@CrossOrigin(origins = { "http://localhost:8085", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087", "http://localhost:8088", "http://localhost:8089", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
 public class GaiaController {
 
     private static final Logger logger = LogManager.getLogger(GaiaController.class);
@@ -92,7 +92,7 @@ public class GaiaController {
 //		return appOriginFiles;
 //	}
 	
-	@GetMapping(value = "/v2/gaia/secure/indexFiles")
+	@GetMapping(value = "/v2/gaia/indexFiles")
 	public Map<String, Map<String, String>> indexFiles(HttpServletRequest request) throws JsonProcessingException {
 		collectGaiaHubRecords();
 		Map<String, Map<String, String>> registry = gaiaHubReader.getAppData();
