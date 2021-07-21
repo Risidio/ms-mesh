@@ -16,6 +16,7 @@ import lombok.ToString;
 @TypeAlias(value = "CacheUpdate")
 public class CacheUpdate {
 
+	private String functionName;
 	private String type;
 	private String contractId;
 	private String assetHash;

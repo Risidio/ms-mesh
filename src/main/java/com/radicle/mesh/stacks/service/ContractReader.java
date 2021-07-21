@@ -88,59 +88,59 @@ public class ContractReader {
 					readTokenContract(application);
 					readTokens(application);
 				}
-				appMapContractRepository.save(appMapContract);
+				applicationRepository.save(application);
 			}
 		}
 		this.registry = appMapContract;
 		return this.registry;
 	}
 
-	public Application read(AppMapContract appMapContract, String contractId) throws JsonProcessingException {
-		Application appl = null;
-		if (appMapContract.getApplications() == null) return null;
-		for (Application application : appMapContract.getApplications()) {
-			if (application.getContractId().equals(contractId)) {
-				readTokenContract(application);
-				readTokens(application);
-				appl = application;
-			}
-		}
-		return appl;
-	}
+//	public Application read(AppMapContract appMapContract, String contractId) throws JsonProcessingException {
+//		Application appl = null;
+//		if (appMapContract.getApplications() == null) return null;
+//		for (Application application : appMapContract.getApplications()) {
+//			if (application.getContractId().equals(contractId)) {
+//				readTokenContract(application);
+//				readTokens(application);
+//				appl = application;
+//			}
+//		}
+//		return appl;
+//	}
 
-	public Token read(AppMapContract appMapContract, String contractId, long nftIndex) throws JsonProcessingException {
-		List<Application> applications = appMapContract.getApplications();
-		if (applications == null) return null;
-		Token t = null;
-		for (Application application : applications) {
-			if (application.getContractId().equals(contractId)) {
-				for (Token token : application.getTokenContract().getTokens()) {
-					if (token.getNftIndex() == nftIndex) {
-						token = readToken(application, nftIndex);
-						t = token;
-					}
-				}
-			}
-		}
-		return t;
-	}
+//	public Token read(AppMapContract appMapContract, String contractId, long nftIndex) throws JsonProcessingException {
+//		List<Application> applications = appMapContract.getApplications();
+//		if (applications == null) return null;
+//		Token t = null;
+//		for (Application application : applications) {
+//			if (application.getContractId().equals(contractId)) {
+//				for (Token token : application.getTokenContract().getTokens()) {
+//					if (token.getNftIndex() == nftIndex) {
+//						token = readToken(application, nftIndex);
+//						t = token;
+//					}
+//				}
+//			}
+//		}
+//		return t;
+//	}
 
-	public Token read(AppMapContract appMapContract, String contractId, String assetHash) throws JsonProcessingException {
-		List<Application> applications = appMapContract.getApplications();
-		if (applications == null) return null;
-		Token t = null;
-		for (Application application : applications) {
-			if (application.getContractId().equals(contractId)) {
-				for (Token token : application.getTokenContract().getTokens()) {
-					if (token.getTokenInfo().getAssetHash().equals(assetHash)) {
-						token = readToken(application, assetHash);
-						t = token;
-					}
-				}
-			}
-		}
-		return t;
-	}
+//	public Token read(AppMapContract appMapContract, String contractId, String assetHash) throws JsonProcessingException {
+//		List<Application> applications = appMapContract.getApplications();
+//		if (applications == null) return null;
+//		Token t = null;
+//		for (Application application : applications) {
+//			if (application.getContractId().equals(contractId)) {
+//				for (Token token : application.getTokenContract().getTokens()) {
+//					if (token.getTokenInfo().getAssetHash().equals(assetHash)) {
+//						token = readToken(application, assetHash);
+//						t = token;
+//					}
+//				}
+//			}
+//		}
+//		return t;
+//	}
 
 	private void readAppMap(AppMapContract appMapContract, String contractId, ReadOnlyFunctionNames fname) throws JsonMappingException, JsonProcessingException {
 		String path = path(fname.getName());
@@ -169,7 +169,7 @@ public class ContractReader {
 			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
 			Application aFromDb = applicationRepository.findByContractId(a.getContractId());
 			if (aFromDb != null) {
-				a.setId(aFromDb.getId());
+				a.setId(aFromDb.getId()); // update
 			}
 			applicationRepository.save(a);
 			if (a != null && a.getStatus() > -1) appMapContract.addApplication(a);
@@ -248,10 +248,12 @@ public class ContractReader {
 						token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
 						token.setBidHistory(readBids(application, index, token.getBidCounter()));
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					t = token;
+					application.getTokenContract().getTokens().add(t);
+					// TODO - use Streams API to sync this with existing token or add a new one.
+					applicationRepository.save(application);
 				}
 			}
 		} catch (Exception e) {

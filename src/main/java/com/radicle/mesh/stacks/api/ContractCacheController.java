@@ -53,20 +53,30 @@ public class ContractCacheController {
 	private Map<String, Set<String>> contractIdNftIndexes = new HashMap<>();
 	@Autowired private AppMapContractRepository appMapContractRepository;
 	@Autowired private ApplicationRepository applicationRepository;
+	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
+	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
 
 	@PostMapping(value = "/v2/cache/update")
 	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
 		Application application = applicationRepository.findByContractId(cacheUpdate.getContractId());
 		Token token = null;
+		boolean newToken = false;
 		if (application != null) {
-			if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
+			if (cacheUpdate.getFunctionName().startsWith("mint-")) {
+				Integer index = application.getTokenContract().getTokens().size();
+				token = contractReader.readSpecificToken(application, index.longValue());
+				application.getTokenContract().getTokens().add(token);
+				newToken = true;
+			} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
 				token = contractReader.readSpecificToken(application, cacheUpdate.getNftIndex());
-			} else {
+			} else if (cacheUpdate.getAssetHash() != null) {
 				token = contractReader.readSpecificToken(application, cacheUpdate.getAssetHash());
 			}
-			for (Token t : application.getTokenContract().getTokens()) {
-				if (token != null && t.getTokenInfo() != null && token.getTokenInfo().getAssetHash().equals(t.getTokenInfo().getAssetHash())) {
-					t = token;
+			if (!newToken) {
+				for (Token t : application.getTokenContract().getTokens()) {
+					if (token != null && t.getTokenInfo() != null && token.getTokenInfo().getAssetHash().equals(t.getTokenInfo().getAssetHash())) {
+						t = token;
+					}
 				}
 			}
 			applicationRepository.save(application);
@@ -78,18 +88,21 @@ public class ContractCacheController {
 		return token;
 	}
 
-	@GetMapping(value = "/v2/registry")
-	public AppMapContract appmap(HttpServletRequest request) {
-		return contractReader.getRegistry();
-	}
-
 	@GetMapping(value = "/v2/build-cache")
 	public AppMapContract registrate() throws JsonProcessingException {
 		AppMapContract registry = contractReader.buildCache();
 		return registry;
 	}
 
-	@GetMapping(value = "/v2/registry/{contractId}")
+	@GetMapping(value = "/v2/tokensAllProjects")
+	public AppMapContract tokensAllProjects(HttpServletRequest request) {
+		AppMapContract ac = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
+		List<Application> applications = applicationRepository.findAll();
+		ac.setApplications(applications);
+		return ac;
+	}
+
+	@GetMapping(value = "/v2/tokensByProject/{contractId}")
 	public AppMapContract appmap(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
 		AppMapContract registry = new AppMapContract();
 		if (contractReader.getRegistry() == null) {
@@ -97,7 +110,7 @@ public class ContractCacheController {
 		}
 		registry.setAdministrator(contractReader.getRegistry().getAdministrator());
 		registry.setAppCounter(contractReader.getRegistry().getAppCounter());
-		Application application = getApplication(contractId);
+		Application application = applicationRepository.findByContractId(contractId);
 		if (application != null) {
 			contractIds.add(contractId);
 			List<Application> apps = new ArrayList<Application>();
@@ -107,11 +120,11 @@ public class ContractCacheController {
 		return registry;
 	}
 
-	@GetMapping(value = "/v2/assets/{contractId}/{stxAddress}")
+	@GetMapping(value = "/v2/tokensByProjectAndOwner/{contractId}/{stxAddress}")
 	public List<Token> appmap(HttpServletRequest request, @PathVariable String contractId, @PathVariable String stxAddress) {
 		AppMapContract registry = new AppMapContract();
 		List<Token> tokens = new ArrayList<Token>();
-		Application application = getApplication(contractId);
+		Application application = applicationRepository.findByContractId(contractId);
 		if (application != null) {
 			for (Token t : application.getTokenContract().getTokens()) {
 				if (t.getOwner().equalsIgnoreCase(stxAddress)) {
@@ -122,20 +135,32 @@ public class ContractCacheController {
 		return tokens;
 	}
 
-	@GetMapping(value = "/v2/registry/{contractId}/{assetHash}")
+	@GetMapping(value = "/v2/tokenByHash/{contractId}/{assetHash}")
 	public Token getAssetByHash(HttpServletRequest request, @PathVariable String contractId, @PathVariable String assetHash) {
-		Set<String> indexes = contractIdNftIndexes.get(contractId);
-		if (indexes == null) {
-			indexes = new HashSet<>();
+		Application application = applicationRepository.findByContractId(contractId);
+		Token t = null;
+		if (application.getTokenContract() != null && application.getTokenContract().getTokens() != null) {
+			for (Token token : application.getTokenContract().getTokens()) {
+				if (token.getTokenInfo().getAssetHash().equals(assetHash)) {
+					t = token;
+				}
+			}
 		}
-		indexes.add(assetHash);
-		contractIdNftIndexes.put(contractId, indexes);
-		return getToken(contractId, assetHash);
+		return t;
 	}
 
-	@GetMapping(value = "/v2/registry/{contractId}/{nftIndex}")
+	@GetMapping(value = "/v2/tokenByIndex/{contractId}/{nftIndex}")
 	public Token getAssetByNftIndex(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long nftIndex) {
-		return getToken(contractId, nftIndex);
+		Application application = applicationRepository.findByContractId(contractId);
+		Token t = null;
+		if (application.getTokenContract() != null && application.getTokenContract().getTokens() != null) {
+			for (Token token : application.getTokenContract().getTokens()) {
+				if (token.getNftIndex() == nftIndex) {
+					t = token;
+				}
+			}
+		}
+		return t;
 	}
 
 	/**
@@ -180,49 +205,6 @@ public class ContractCacheController {
 		String url = basePath + "/v2/transactions";
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
 		return response.getBody();
-	}
-
-	private Application getApplication(String contractId) {
-		AppMapContract registry = contractReader.getRegistry();
-		if (registry == null || registry.getApplications() == null) return null;
-		Application application = null;
-		for (Application a : registry.getApplications()) {
-			if (a.getContractId().contentEquals(contractId)) {
-				application = a;
-			}
-		}
-		return application;
-	}
-
-	private Token getToken(String contractId, String assetHash) {
-		AppMapContract registry = contractReader.getRegistry();
-		if (registry == null || registry.getApplications() == null) return null;
-		Token token = null;
-		for (Application a : registry.getApplications()) {
-			if (a.getContractId().contentEquals(contractId)) {
-				for (Token t : a.getTokenContract().getTokens()) {
-					if (t.getTokenInfo() != null && t.getTokenInfo().getAssetHash().equals(assetHash)) {
-						token = t;
-					}
-				}
-			}
-		}
-		return token;
-	}
-
-	private Token getToken(String contractId, Long nftIndex) {
-		AppMapContract registry = contractReader.getRegistry();
-		if (registry == null || registry.getApplications() == null) return null;
-		for (Application a : registry.getApplications()) {
-			if (a.getContractId().contentEquals(contractId)) {
-				for (Token t : a.getTokenContract().getTokens()) {
-					if (t.getTokenInfo() != null && t.getNftIndex() == nftIndex) {
-						return t;
-					}
-				}
-			}
-		}
-		return null;
 	}
 
 	private HttpEntity<String> getRequestEntity(Principal principal) {
