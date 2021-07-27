@@ -172,7 +172,9 @@ public class ContractReader {
 				a.setId(aFromDb.getId()); // update
 			}
 			applicationRepository.save(a);
-			if (a != null && a.getStatus() > -1) appMapContract.addApplication(a);
+			if (a != null && a.getStatus() > -1) {
+				appMapContract.addApplication(a);
+			}
 		}
 	}
 
@@ -251,9 +253,6 @@ public class ContractReader {
 						e.printStackTrace();
 					}
 					t = token;
-					application.getTokenContract().getTokens().add(t);
-					// TODO - use Streams API to sync this with existing token or add a new one.
-					applicationRepository.save(application);
 				}
 			}
 		} catch (Exception e) {

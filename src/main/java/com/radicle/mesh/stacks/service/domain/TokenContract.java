@@ -68,7 +68,16 @@ public class TokenContract {
 		if (tokens == null) {
 			tokens = new ArrayList();
 		}
-		if (token != null) tokens.add(token);
+		boolean found = false;
+		if (token != null) {
+			for (Token t : tokens) {
+				if (token.getNftIndex() == t.getNftIndex()) {
+					t = token;
+					found = true;
+				}
+			}
+			if (!found) tokens.add(token);
+		}
 	}
 
 }

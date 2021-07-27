@@ -89,7 +89,7 @@ public class ContractCacheController {
 	}
 
 	@GetMapping(value = "/v2/build-cache")
-	public AppMapContract registrate() throws JsonProcessingException {
+	public AppMapContract buildCache() throws JsonProcessingException {
 		AppMapContract registry = contractReader.buildCache();
 		return registry;
 	}
@@ -106,7 +106,7 @@ public class ContractCacheController {
 	public AppMapContract appmap(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
 		AppMapContract registry = new AppMapContract();
 		if (contractReader.getRegistry() == null) {
-			registrate();
+			buildCache();
 		}
 		registry.setAdministrator(contractReader.getRegistry().getAdministrator());
 		registry.setAppCounter(contractReader.getRegistry().getAppCounter());
@@ -122,7 +122,6 @@ public class ContractCacheController {
 
 	@GetMapping(value = "/v2/tokensByProjectAndOwner/{contractId}/{stxAddress}")
 	public List<Token> appmap(HttpServletRequest request, @PathVariable String contractId, @PathVariable String stxAddress) {
-		AppMapContract registry = new AppMapContract();
 		List<Token> tokens = new ArrayList<Token>();
 		Application application = applicationRepository.findByContractId(contractId);
 		if (application != null) {
