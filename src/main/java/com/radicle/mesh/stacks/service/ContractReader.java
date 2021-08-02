@@ -63,13 +63,14 @@ public class ContractReader {
 	@Autowired private GaiaHubReader gaiaHubReader;
 	@Autowired private AppMapContractRepository appMapContractRepository;
 	@Autowired private ApplicationRepository applicationRepository;
+	@Autowired private TokenRepository tokenRepository;
 	private AppMapContract registry;
 
-	public AppMapContract getRegistry() {
-		return registry;
+	@Async
+	public void buildCacheAsync() throws JsonProcessingException {
+		buildCache();
 	}
-
-	// @Async
+	
 	public AppMapContract buildCache() throws JsonProcessingException {
 		AppMapContract appMapContract = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		if (appMapContract == null) {
@@ -142,11 +143,12 @@ public class ContractReader {
 //		return t;
 //	}
 
+	@SuppressWarnings("unchecked")
 	private void readAppMap(AppMapContract appMapContract, String contractId, ReadOnlyFunctionNames fname) throws JsonMappingException, JsonProcessingException {
 		String path = path(fname.getName());
 		String response = readFromStacks(path, new String[0]);
 		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-		Map<String, Object> data1 = (Map)data.get(fname.getName());
+		Map<String, Object> data1 = (Map<String, Object>)data.get(fname.getName());
 		if (data1 != null) {
 			if (data1.containsKey(APP_COUNTER)) {
 				ClarityType ct = (ClarityType) data1.get(APP_COUNTER);
@@ -191,53 +193,44 @@ public class ContractReader {
 	private void readTokens(Application application) throws JsonMappingException, JsonProcessingException {
 		TokenContract tokenContract = application.getTokenContract();
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
-			Token token = readToken(application, index);
+			Token token = readToken(application.getContractId(), index);
 			if (token != null) {
 				// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
-				tokenContract.addToken(token);
-				readMetaData(application, token);
+				// tokenContract.addToken(token);
+				readMetaData(token);
 			}
 		}
 	}
 	
-	public Token readSpecificToken(Application application, Long nftIndex) throws JsonMappingException, JsonProcessingException {
-		TokenContract tokenContract = application.getTokenContract();
-		Token token = readToken(application, nftIndex);
+	public Token readSpecificToken(String contractId, Long nftIndex) throws JsonMappingException, JsonProcessingException {
+		Token token = readToken(contractId, nftIndex);
 		if (token != null) {
-			// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
-			tokenContract.addToken(token);
-			readMetaData(application, token);
+			readMetaData(token);
 		}
 		return token;
 	}
 	
-	public Token readSpecificToken(Application application, String assetHash) throws JsonMappingException, JsonProcessingException {
-		TokenContract tokenContract = application.getTokenContract();
-		if (tokenContract == null) {
-			tokenContract = new TokenContract();
-		}
-		Token token = readToken(application, assetHash);
+	public Token readSpecificToken(String contractId, String assetHash) throws JsonMappingException, JsonProcessingException {
+		Token token = readToken(contractId, assetHash);
 		if (token != null) {
-			// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
-			tokenContract.addToken(token);
-			readMetaData(application, token);
+			readMetaData(token);
 		}
 		return token;
 	}
 	
 	@Async
-	public void readMetaData(Application application, Token token) {
+	public void readMetaData(Token token) {
 		try {
-			gaiaHubReader.read(application, token);
+			gaiaHubReader.read(token);
 		} catch (JsonProcessingException e) {
 			logger.error(e.getMessage());
 		}
 	}
 
-	private Token readToken(Application application, long index) throws JsonProcessingException {
+	private Token readToken(String contractId, long index) throws JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_INDEX;
 		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(index));
-		String path = path(application.getContractId(), fname.getName());
+		String path = path(contractId, fname.getName());
 		String response = readFromStacks(path, new String[] {arg1});
 		Token t = null;
 		try {
@@ -245,14 +238,15 @@ public class ContractReader {
 			if (data != null) {
 				Map<String, Object> data1 = (Map)data.get(fname.getName());
 				if (data1 != null) {
-					Token token = Token.fromMap(index, (Map)data.get(fname.getName()));
+					Token token = Token.fromMap(index, (Map)data.get(fname.getName()), contractId);
 					try {
-						token.setOfferHistory(readOffers(application, index, token.getOfferCounter()));
-						token.setBidHistory(readBids(application, index, token.getBidCounter()));
+						token.setOfferHistory(readOffers(contractId, index, token.getOfferCounter()));
+						token.setBidHistory(readBids(contractId, index, token.getBidCounter()));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					t = token;
+					saveTokenToMongo(token);
 				}
 			}
 		} catch (Exception e) {
@@ -260,11 +254,21 @@ public class ContractReader {
 		}
 		return t;
 	}
+	
+	private void saveTokenToMongo(Token token) {
+		if (token != null) {
+			Token t = tokenRepository.findByContractIdAndNftIndex(token.getContractId(), token.getNftIndex());
+			if (t != null) {
+				token.setId(t.getId());
+			}
+		}
+		tokenRepository.save(token);
+	}
 
-	private Token readToken(Application application, String assetHash) throws JsonProcessingException {
+	private Token readToken(String contractId, String assetHash) throws JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_HASH;
 		// String arg1 = claritySerialiser.serialiseUInt(assetHash);
-		String path = path(application.getContractId(), fname.getName());
+		String path = path(contractId, fname.getName());
 		String arg1 = claritySerialiser.serialiseHexString(assetHash);
 		String response = readFromStacks(path, new String[] { arg1 });
 		Token t = null;
@@ -274,18 +278,19 @@ public class ContractReader {
 			if (data1 != null) {
 				ClarityType ct = (ClarityType)data1.get("nftIndex");
 				long nftIndex = ((BigInteger)ct.getValue()).longValue();
- 				Token token = Token.fromMap(nftIndex, (Map)data.get(fname.getName()));
-				token.setOfferHistory(readOffers(application, nftIndex, token.getOfferCounter()));
-				token.setBidHistory(readBids(application, nftIndex, token.getBidCounter()));
+ 				Token token = Token.fromMap(nftIndex, (Map)data.get(fname.getName()), contractId);
+				token.setOfferHistory(readOffers(contractId, nftIndex, token.getOfferCounter()));
+				token.setBidHistory(readBids(contractId, nftIndex, token.getBidCounter()));
 				t = token;
+				saveTokenToMongo(token);
 			}
 		}
 		return t;
 	}
 
-	private List<Offer> readOffers(Application application, long nftIndex, long offerCounter) throws JsonMappingException, JsonProcessingException {
+	private List<Offer> readOffers(String contractId, long nftIndex, long offerCounter) throws JsonMappingException, JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_OFFER_AT_INDEX;
-		String path = path(application.getContractId(), fname.getName());
+		String path = path(contractId, fname.getName());
 		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(nftIndex));
 		List<Offer> offers = new ArrayList();
 		for (long index = 0; index < offerCounter; index++) {
@@ -303,9 +308,9 @@ public class ContractReader {
 		return offers;
 	}
 
-	private List<Bid> readBids(Application application, long nftIndex, long bidCounter) throws JsonMappingException, JsonProcessingException {
+	private List<Bid> readBids(String contractId, long nftIndex, long bidCounter) throws JsonMappingException, JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_BID_AT_INDEX;
-		String path = path(application.getContractId(), fname.getName());
+		String path = path(contractId, fname.getName());
 		String arg1 = claritySerialiser.serialiseUInt(BigInteger.valueOf(nftIndex));
 		List<Bid> bids = new ArrayList();
 		for (long index = 0; index < bidCounter; index++) {

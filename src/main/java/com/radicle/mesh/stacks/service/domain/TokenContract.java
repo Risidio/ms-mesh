@@ -64,20 +64,20 @@ public class TokenContract {
 		return tc;
 	}
 	
-	public void addToken(Token token) {
-		if (tokens == null) {
-			tokens = new ArrayList();
-		}
-		boolean found = false;
-		if (token != null) {
-			for (Token t : tokens) {
-				if (token.getNftIndex() == t.getNftIndex()) {
-					t = token;
-					found = true;
-				}
-			}
-			if (!found) tokens.add(token);
-		}
-	}
+//	public void addToken(Token token) {
+//		if (tokens == null) {
+//			tokens = new ArrayList();
+//		}
+//		boolean found = false;
+//		if (token != null) {
+//			for (Token t : tokens) {
+//				if (token.getNftIndex() == t.getNftIndex()) {
+//					t = token;
+//					found = true;
+//				}
+//			}
+//			if (!found) tokens.add(token);
+//		}
+//	}
 
 }

@@ -24,4 +24,10 @@ public class GlobalExceptionHandler {
 		return e.getMessage();
 	}
 
+	@ExceptionHandler(RuntimeException.class)
+	public String handleResourceAccessException(HttpServletRequest request, HttpServletResponse response, RuntimeException e) {
+	    response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+		return e.getMessage();
+	}
+
 }

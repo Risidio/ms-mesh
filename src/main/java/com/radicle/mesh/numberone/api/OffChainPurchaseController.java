@@ -1,4 +1,4 @@
-package com.radicle.mesh.stacks.api;
+package com.radicle.mesh.numberone.api;
 
 import java.util.List;
 

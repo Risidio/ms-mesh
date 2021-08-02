@@ -1,11 +1,10 @@
-package com.radicle.mesh.privilege.service.domain;
+package com.radicle.mesh.stacks.model.stxbuffer.types;
 
 import java.util.List;
 
 import org.springframework.data.annotation.TypeAlias;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,14 +12,14 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@Builder
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "Domain")
-public class Domain {
+@AllArgsConstructor
+@TypeAlias(value = "CacheQuery")
+public class CacheQuery {
 
-	private String host;
-	private List<String> privileges;
+	private String queryType;
+	private String contractId;
+	private List<String> hashes;
 
 }

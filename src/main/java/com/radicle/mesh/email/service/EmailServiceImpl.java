@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
+import com.radicle.mesh.numberone.domain.ExhibitRequest;
 import com.radicle.mesh.numberone.domain.OffChainOffer;
 
 import sendinblue.ApiClient;
@@ -46,6 +47,8 @@ public class EmailServiceImpl implements EmailService {
 	@Autowired private MongoTemplate mongoTemplate;
 	@Value("${sendinblue.api.key}")
 	String sendInBlueApiKey;
+	@Value("${sendinblue.api.adminEmail}")
+	String adminEmail;
 
 
 	@Override
@@ -56,6 +59,22 @@ public class EmailServiceImpl implements EmailService {
     	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", content);
     	message.setHtmlContent(htmlContent);
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, offChainOffer.getEmail());
+    	return send(sendSmtpEmail);
+	}
+
+	@Override
+	public String sendExhibitRequest(ExhibitRequest exhibitRequest) {
+    	SendSmtpEmail message = new SendSmtpEmail();
+    	message.setSubject("Request to Exhibit");
+    	String htmlContent = getTemplate(emailTemplate1Name);
+    	String content = exhibitRequest.getName() + " has requested exhibition space. \n\n"; 
+    	content += "Email address: " + exhibitRequest.getEmail() + ". \n"; 
+    	content += "Stacks address: " + exhibitRequest.getStxAddress() + ". \n\n"; 
+    	content += "To approve goto: <a href=\"https://thisisnumberone.com/admin/exhibit-requests\"></a>"; 
+    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", content);
+    	message.setHtmlContent(htmlContent);
+    	// message.setHtmlContent("Thanks for registering your interest.");
+		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, adminEmail);
     	return send(sendSmtpEmail);
 	}
 
@@ -148,6 +167,7 @@ public class EmailServiceImpl implements EmailService {
 		headers.setContentType(MediaType.TEXT_HTML);
 		return headers;
 	}
+
 
 
 //    public void sendEmail(TransacEmail emailMessage) {

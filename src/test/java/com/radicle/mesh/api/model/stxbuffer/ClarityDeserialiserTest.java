@@ -52,7 +52,7 @@ class ClarityDeserialiserTest {
 		try {
 			ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_INDEX;
 			Map<String, Object> data = cd.deserialise(fname.getName(), getTokenByIndexJson);
-			Token token = Token.fromMap(0, (Map)data.get(fname.getName()));
+			Token token = Token.fromMap(0, (Map)data.get(fname.getName()), "contractId");
 			assertTrue(data.size() == 1);
 			Map<String, Object> nm = (Map)data.get(fname.getName());
 			assertTrue( nm.size() == 8);
@@ -73,7 +73,7 @@ class ClarityDeserialiserTest {
 		try {
 			ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_INDEX;
 			Map<String, Object> data = cd.deserialise(fname.getName(), getTokenByIndexJson2);
-			Token token = Token.fromMap(0, (Map)data.get(fname.getName()));
+			Token token = Token.fromMap(0, (Map)data.get(fname.getName()), "contractId");
 			assertTrue(data.size() == 1);
 			Map<String, Object> nm = (Map)data.get(fname.getName());
 			assertTrue( nm.size() == 8);

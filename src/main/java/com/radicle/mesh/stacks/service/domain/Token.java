@@ -4,7 +4,9 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.radicle.mesh.stacks.service.ClarityType;
 
@@ -22,8 +24,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeAlias(value = "Token")
+@Document
 public class Token {
 	
+	@Id private String id;
 	private Long nftIndex;
 	private Long offerCounter;
 	private Long bidCounter;
@@ -34,11 +38,13 @@ public class Token {
 	private List<Offer> offerHistory;
 	private List<Bid> bidHistory;
 	private String owner;
+	private String contractId;
 	
-	public static Token fromMap(long tokenIndex, Map<String, Object> map) {
+	public static Token fromMap(long tokenIndex, Map<String, Object> map, String contractId) {
 		
 		Token t = new Token();
 		t.nftIndex = tokenIndex;
+		t.contractId = contractId;
 		t.owner = (String) ((ClarityType)map.get("owner")).getValueHex();
 
 		if (map.containsKey("beneficiaryData")) {

@@ -2,11 +2,8 @@ package com.radicle.mesh.stacks.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,10 +28,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.stacks.model.Principal;
+import com.radicle.mesh.stacks.model.stxbuffer.types.CacheQuery;
 import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdate;
+import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdateResult;
 import com.radicle.mesh.stacks.service.AppMapContractRepository;
 import com.radicle.mesh.stacks.service.ApplicationRepository;
 import com.radicle.mesh.stacks.service.ContractReader;
+import com.radicle.mesh.stacks.service.TokenRepository;
 import com.radicle.mesh.stacks.service.domain.AppMapContract;
 import com.radicle.mesh.stacks.service.domain.Application;
 import com.radicle.mesh.stacks.service.domain.Token;
@@ -49,52 +49,40 @@ public class ContractCacheController {
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ContractReader contractReader;
 	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
-	private Set<String> contractIds = new HashSet<>();
-	private Map<String, Set<String>> contractIdNftIndexes = new HashMap<>();
 	@Autowired private AppMapContractRepository appMapContractRepository;
 	@Autowired private ApplicationRepository applicationRepository;
+	@Autowired private TokenRepository tokenRepository;
 	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
 	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
 
 	@PostMapping(value = "/v2/cache/update")
 	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
-		Application application = applicationRepository.findByContractId(cacheUpdate.getContractId());
 		Token token = null;
-		boolean newToken = false;
-		if (application != null) {
-			if (cacheUpdate.getFunctionName().startsWith("mint-")) {
-				Integer index = application.getTokenContract().getTokens().size();
-				token = contractReader.readSpecificToken(application, index.longValue());
-				application.getTokenContract().getTokens().add(token);
-				newToken = true;
-			} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
-				token = contractReader.readSpecificToken(application, cacheUpdate.getNftIndex());
-			} else if (cacheUpdate.getAssetHash() != null) {
-				token = contractReader.readSpecificToken(application, cacheUpdate.getAssetHash());
-			}
-			if (!newToken) {
-				for (Token t : application.getTokenContract().getTokens()) {
-					if (token != null && t.getTokenInfo() != null && token.getTokenInfo().getAssetHash().equals(t.getTokenInfo().getAssetHash())) {
-						t = token;
-					}
-				}
-			}
-			applicationRepository.save(application);
+		if (cacheUpdate.getFunctionName().startsWith("mint-")) {
+			Long tokenCount = tokenRepository.countByContractId(cacheUpdate.getContractId());
+			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenCount);
+		} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
+			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getNftIndex());
+		} else if (cacheUpdate.getAssetHash() != null) {
+			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getAssetHash());
 		}
 		logger.info("Read cached token: " + token);
 		if (token != null) {
-			simpMessagingTemplate.convertAndSend("/queue/contract-news-" + cacheUpdate.getContractId() + "-" + cacheUpdate.getAssetHash(), token);
+			List<Token> tokens = new ArrayList<Token>();
+			tokens.add(token);
+			CacheUpdateResult cr = new CacheUpdateResult(tokens, cacheUpdate);
+			simpMessagingTemplate.convertAndSend("/queue/contract-news-" + cacheUpdate.getContractId(), cr);
 		}
 		return token;
 	}
 
 	@GetMapping(value = "/v2/build-cache")
-	public AppMapContract buildCache() throws JsonProcessingException {
-		AppMapContract registry = contractReader.buildCache();
-		return registry;
+	public String buildCache() throws JsonProcessingException {
+		contractReader.buildCacheAsync();
+		return "Cache builder called...";
 	}
 
-	@GetMapping(value = "/v2/tokensAllProjects")
+	@GetMapping(value = "/v2/registry")
 	public AppMapContract tokensAllProjects(HttpServletRequest request) {
 		AppMapContract ac = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		List<Application> applications = applicationRepository.findAll();
@@ -102,64 +90,67 @@ public class ContractCacheController {
 		return ac;
 	}
 
-	@GetMapping(value = "/v2/tokensByProject/{contractId}")
-	public AppMapContract appmap(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
-		AppMapContract registry = new AppMapContract();
-		if (contractReader.getRegistry() == null) {
-			buildCache();
-		}
-		registry.setAdministrator(contractReader.getRegistry().getAdministrator());
-		registry.setAppCounter(contractReader.getRegistry().getAppCounter());
+	@GetMapping(value = "/v2/registry/{contractId}")
+	public AppMapContract tokensAllProjects(HttpServletRequest request, @PathVariable String contractId) {
+		AppMapContract ac = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		Application application = applicationRepository.findByContractId(contractId);
-		if (application != null) {
-			contractIds.add(contractId);
-			List<Application> apps = new ArrayList<Application>();
-			apps.add(application);
-			registry.setApplications(apps);
-		}
-		return registry;
+		List<Application> apps = new ArrayList<Application>();
+		apps.add(application);
+		ac.setApplications(apps);
+		return ac;
 	}
 
-	@GetMapping(value = "/v2/tokensByProjectAndOwner/{contractId}/{stxAddress}")
-	public List<Token> appmap(HttpServletRequest request, @PathVariable String contractId, @PathVariable String stxAddress) {
-		List<Token> tokens = new ArrayList<Token>();
-		Application application = applicationRepository.findByContractId(contractId);
-		if (application != null) {
-			for (Token t : application.getTokenContract().getTokens()) {
-				if (t.getOwner().equalsIgnoreCase(stxAddress)) {
-					tokens.add(t);
-				}
-			}
-		}
+	@PostMapping(value = "/v2/tokensByQuery")
+	public List<Token> tokensByQuery(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
+		// TODO: move this query inside mongo
+		List<Token> tokens = tokenRepository.findByContractId(cacheQuery.getContractId());
+		List<Token> listOutput =
+				tokens.stream()
+			           .filter(e -> cacheQuery.getHashes().stream().anyMatch(assetHash -> assetHash.equals(e.getTokenInfo().getAssetHash())))
+			           .collect(Collectors.toList());
+		return listOutput;
+	}
+
+	@GetMapping(value = "/v2/tokens")
+	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request) throws JsonProcessingException {
+		List<Token> tokens = tokenRepository.findAll();
 		return tokens;
 	}
 
-	@GetMapping(value = "/v2/tokenByHash/{contractId}/{assetHash}")
-	public Token getAssetByHash(HttpServletRequest request, @PathVariable String contractId, @PathVariable String assetHash) {
-		Application application = applicationRepository.findByContractId(contractId);
-		Token t = null;
-		if (application.getTokenContract() != null && application.getTokenContract().getTokens() != null) {
-			for (Token token : application.getTokenContract().getTokens()) {
-				if (token.getTokenInfo().getAssetHash().equals(assetHash)) {
-					t = token;
-				}
-			}
-		}
-		return t;
+	@GetMapping(value = "/v2/tokensByContractId/{contractId}")
+	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
+		List<Token> tokens = tokenRepository.findByContractId(contractId);
+		return tokens;
+	}
+
+	@GetMapping(value = "/v2/tokensByContractIdAndEdition/{contractId}/{edition}")
+	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long edition) throws JsonProcessingException {
+		List<Token> tokens = tokenRepository.findByContractIdAndEdition(contractId, edition);
+		return tokens;
+	}
+
+	@GetMapping(value = "/v2/tokensByProject/{contractId}")
+	public List<Token> tokensByProject(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
+		List<Token> tokens = tokenRepository.findByContractId(contractId);
+		return tokens;
+	}
+
+	@GetMapping(value = "/v2/tokensByProjectAndOwner/{contractId}/{stxAddress}")
+	public List<Token> tokensByProjectAndOwner(HttpServletRequest request, @PathVariable String contractId, @PathVariable String stxAddress) {
+		List<Token> tokens = tokenRepository.findByContractIdAndOwner(contractId, stxAddress);
+		return tokens;
+	}
+
+	@GetMapping(value = "/v2/tokenByHash/{assetHash}")
+	public Token tokenByHash(HttpServletRequest request, @PathVariable String contractId, @PathVariable String assetHash) {
+		Token token = tokenRepository.findByAssetHash(assetHash);
+		return token;
 	}
 
 	@GetMapping(value = "/v2/tokenByIndex/{contractId}/{nftIndex}")
-	public Token getAssetByNftIndex(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long nftIndex) {
-		Application application = applicationRepository.findByContractId(contractId);
-		Token t = null;
-		if (application.getTokenContract() != null && application.getTokenContract().getTokens() != null) {
-			for (Token token : application.getTokenContract().getTokens()) {
-				if (token.getNftIndex() == nftIndex) {
-					t = token;
-				}
-			}
-		}
-		return t;
+	public Token tokenByIndex(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long nftIndex) {
+		Token token = tokenRepository.findByContractIdAndNftIndex(contractId, nftIndex);
+		return token;
 	}
 
 	/**
