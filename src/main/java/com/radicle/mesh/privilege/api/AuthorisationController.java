@@ -45,6 +45,30 @@ public class AuthorisationController {
 		return authorisation;
 	}
 
+	@PostMapping(value = "/v2/auth/add/{stxAddress}/{privilege}/{hostname}")
+	public Authorisation add(HttpServletRequest request, @PathVariable String stxAddress, @PathVariable String privilege, @PathVariable String hostname) throws JsonMappingException, JsonProcessingException {
+		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
+		if (authorisation != null) {
+			authorisation.addPrivilege(hostname, privilege);
+		} else {
+			authorisation = new Authorisation();
+			authorisation.setStxAddress(stxAddress);
+			authorisation.addPrivilege(hostname, privilege);
+		}
+		authorisation = authorisationRepository.save(authorisation);
+		return authorisation;
+	}
+
+	@PostMapping(value = "/v2/auth/remove/{stxAddress}/{privilege}/{hostname}")
+	public Authorisation remove(HttpServletRequest request, @PathVariable String stxAddress, @PathVariable String privilege, @PathVariable String hostname) throws JsonMappingException, JsonProcessingException {
+		Authorisation authorisation = authorisationRepository.findByStxAddress(stxAddress);
+		if (authorisation != null) {
+			authorisation.removePrivilege(hostname, privilege);
+			authorisation = authorisationRepository.save(authorisation);
+		}
+		return authorisation;
+	}
+
 	@GetMapping(value = "/v2/auth/getAuthorisations")
 	public List<Authorisation> getAuthorisations(HttpServletRequest request) {
 		List<Authorisation> authorisations = authorisationRepository.findAll();

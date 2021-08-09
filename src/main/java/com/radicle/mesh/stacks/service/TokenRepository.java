@@ -11,9 +11,10 @@ import com.radicle.mesh.stacks.service.domain.Token;
 @Repository
 public interface TokenRepository extends MongoRepository<Token, String> {
 
-    @Query(value = "{ 'tokenInfo.assetHash' : ?#{[0]} }")
-	public Token findByAssetHash(String assetHash);
-    
+    @Query(value = "{ 'tokenInfo.assetHash' : ?#{[0]}, 'tokenInfo.edition' : ?#{[1]} }")
+    // public Page<Token> findByAssetHashAndEdition(String assetHash, Long edition, Pageable pageable);
+	public List<Token> findByAssetHashAndEdition(String assetHash, Long edition);
+
     @Query(value = "{ 'contractId' : ?#{[0]}, 'tokenInfo.edition' : ?#{[1]} }")
 	public List<Token> findByContractIdAndEdition(String contractId, Long edition);
     

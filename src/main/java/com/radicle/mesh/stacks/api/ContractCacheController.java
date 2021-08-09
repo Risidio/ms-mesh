@@ -2,8 +2,10 @@ package com.radicle.mesh.stacks.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,9 +19,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestOperations;
@@ -27,6 +31,7 @@ import org.springframework.web.client.RestOperations;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.radicle.mesh.stacks.model.Principal;
 import com.radicle.mesh.stacks.model.stxbuffer.types.CacheQuery;
 import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdate;
@@ -34,10 +39,12 @@ import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdateResult;
 import com.radicle.mesh.stacks.service.AppMapContractRepository;
 import com.radicle.mesh.stacks.service.ApplicationRepository;
 import com.radicle.mesh.stacks.service.ContractReader;
+import com.radicle.mesh.stacks.service.TokenFilterRepository;
 import com.radicle.mesh.stacks.service.TokenRepository;
 import com.radicle.mesh.stacks.service.domain.AppMapContract;
 import com.radicle.mesh.stacks.service.domain.Application;
 import com.radicle.mesh.stacks.service.domain.Token;
+import com.radicle.mesh.stacks.service.domain.TokenFilter;
 
 @RestController
 public class ContractCacheController {
@@ -52,19 +59,28 @@ public class ContractCacheController {
 	@Autowired private AppMapContractRepository appMapContractRepository;
 	@Autowired private ApplicationRepository applicationRepository;
 	@Autowired private TokenRepository tokenRepository;
+	@Autowired private TokenFilterRepository tokenFilterRepository;
 	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
 	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
 
 	@PostMapping(value = "/v2/cache/update")
 	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
 		Token token = null;
-		if (cacheUpdate.getFunctionName().startsWith("mint-")) {
-			Long tokenCount = tokenRepository.countByContractId(cacheUpdate.getContractId());
-			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenCount);
-		} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
-			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getNftIndex());
-		} else if (cacheUpdate.getAssetHash() != null) {
-			token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getAssetHash());
+		try {
+			if (cacheUpdate.getFunctionName().startsWith("mint-")) {
+				Long tokenCount = tokenRepository.countByContractId(cacheUpdate.getContractId());
+				token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenCount);
+			} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
+				token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getNftIndex());
+			} else if (cacheUpdate.getAssetHash() != null) {
+			    // PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
+			    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(cacheUpdate.getAssetHash(), 1L);
+				if (tokenPage != null && !tokenPage.isEmpty()) {
+					token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenPage.get(0).getNftIndex());
+				}
+			}
+		} catch (Exception e) {
+			// cache miss - no need to report this as just means the client has asked for a asset thats not yet minted;
 		}
 		logger.info("Read cached token: " + token);
 		if (token != null) {
@@ -100,19 +116,69 @@ public class ContractCacheController {
 		return ac;
 	}
 
-	@PostMapping(value = "/v2/tokensByQuery")
-	public List<Token> tokensByQuery(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
-		// TODO: move this query inside mongo
-		List<Token> tokens = tokenRepository.findByContractId(cacheQuery.getContractId());
-		List<Token> listOutput =
-				tokens.stream()
-			           .filter(e -> cacheQuery.getHashes().stream().anyMatch(assetHash -> assetHash.equals(e.getTokenInfo().getAssetHash())))
-			           .collect(Collectors.toList());
-		return listOutput;
+	@GetMapping(value = "/v2/token-filters")
+	public List<TokenFilter> filters() {
+		List<TokenFilter> filters = tokenFilterRepository.findAll();
+		return filters;
+	}
+
+	@DeleteMapping(value = "/v2/token-filter/{filterId}")
+	public Boolean deleteFilter(@PathVariable String filterId) {
+		tokenFilterRepository.deleteById(filterId);
+		return true;
+	}
+
+	@PostMapping(value = "/v2/token-filter")
+	public TokenFilter postFilter(@RequestBody TokenFilter tokenFilter) {
+		tokenFilter = tokenFilterRepository.save(tokenFilter);
+		return tokenFilter;
+	}
+
+	@PutMapping(value = "/v2/token-filter")
+	public TokenFilter putFilter(@RequestBody TokenFilter tokenFilter) {
+		if (tokenFilter.getId() != null) {
+			Optional<TokenFilter> tf = tokenFilterRepository.findById(tokenFilter.getId());
+			if (tf.isPresent()) {
+				tokenFilter.setId(tf.get().getId());
+			}
+		}
+		tokenFilter = tokenFilterRepository.save(tokenFilter);
+		return tokenFilter;
+	}
+
+	@PostMapping(value = "/v2/tokenFirstsByQuery")
+	public List<Token> tokenFirstsByQuery(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
+		return tokens(cacheQuery);
+	}
+
+	@PostMapping(value = "/v2/tokenFirstsByQueryAsString")
+	public Map<String, String> tokenFirstsByQueryAsString(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
+		List<Token> tokens = tokens(cacheQuery);
+		Map<String, String> tokenMap = new HashMap<String, String>();
+		ObjectWriter ow = mapper.writer();
+		for (Token token : tokens) {
+			tokenMap.put(token.getTokenInfo().getAssetHash(), ow.writeValueAsString(token));
+		}
+		return tokenMap;
+	}
+	
+	private List<Token> tokens(CacheQuery cacheQuery) {
+		List<Token> tokens = new ArrayList<Token>();
+		for (String assetHash : cacheQuery.getHashes()) {
+		    // PageRequest request = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
+		    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
+			if (tokenPage != null && !tokenPage.isEmpty()) tokens.add(tokenPage.get(0));
+		}
+//		List<Token> tokens = tokenRepository.findByContractIdAndEdition(cacheQuery.getContractId(), 1L);
+//		List<Token> listOutput =
+//				tokens.stream()
+//			           .filter(e -> cacheQuery.getHashes().stream().anyMatch(assetHash -> assetHash.equals(e.getTokenInfo().getAssetHash())))
+//			           .collect(Collectors.toList());
+		return tokens;
 	}
 
 	@GetMapping(value = "/v2/tokens")
-	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request) throws JsonProcessingException {
+	public List<Token> tokens(HttpServletRequest request) throws JsonProcessingException {
 		List<Token> tokens = tokenRepository.findAll();
 		return tokens;
 	}
@@ -129,6 +195,14 @@ public class ContractCacheController {
 		return tokens;
 	}
 
+	@GetMapping(value = "/v2/tokenByAssetHashAndEdition/{assetHash}/{edition}")
+	public Token tokensByAssetHashAndEdition(HttpServletRequest request, @PathVariable String assetHash, @PathVariable Long edition) throws JsonProcessingException {
+	    List<Token> tokens = tokenRepository.findByAssetHashAndEdition(assetHash, edition);
+		Token token = null;
+		if (tokens != null && !tokens.isEmpty()) token = tokens.get(0);
+		return token;
+	}
+
 	@GetMapping(value = "/v2/tokensByProject/{contractId}")
 	public List<Token> tokensByProject(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
 		List<Token> tokens = tokenRepository.findByContractId(contractId);
@@ -142,8 +216,11 @@ public class ContractCacheController {
 	}
 
 	@GetMapping(value = "/v2/tokenByHash/{assetHash}")
-	public Token tokenByHash(HttpServletRequest request, @PathVariable String contractId, @PathVariable String assetHash) {
-		Token token = tokenRepository.findByAssetHash(assetHash);
+	public Token tokenByHash(HttpServletRequest request, @PathVariable String assetHash) {
+	    // PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
+	    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
+		Token token = null;
+		if (tokenPage != null && !tokenPage.isEmpty()) token = tokenPage.get(0);
 		return token;
 	}
 

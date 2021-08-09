@@ -29,6 +29,7 @@ import com.radicle.mesh.stacks.service.domain.Bid;
 import com.radicle.mesh.stacks.service.domain.Offer;
 import com.radicle.mesh.stacks.service.domain.Token;
 import com.radicle.mesh.stacks.service.domain.TokenContract;
+import com.radicle.mesh.stacks.service.domain.TokenFilter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -64,6 +65,7 @@ public class ContractReader {
 	@Autowired private AppMapContractRepository appMapContractRepository;
 	@Autowired private ApplicationRepository applicationRepository;
 	@Autowired private TokenRepository tokenRepository;
+	@Autowired private TokenFilterRepository tokenFilterRepository;
 	private AppMapContract registry;
 
 	@Async
@@ -87,9 +89,9 @@ public class ContractReader {
 				logger.info("Applications -> " + application.toString());
 				if (application.getStatus() > -1) {
 					readTokenContract(application);
+					applicationRepository.save(application);
 					readTokens(application);
 				}
-				applicationRepository.save(application);
 			}
 		}
 		this.registry = appMapContract;
@@ -194,8 +196,8 @@ public class ContractReader {
 		TokenContract tokenContract = application.getTokenContract();
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
 			Token token = readToken(application.getContractId(), index);
+			logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 			if (token != null) {
-				// logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 				// tokenContract.addToken(token);
 				readMetaData(token);
 			}
@@ -221,7 +223,11 @@ public class ContractReader {
 	@Async
 	public void readMetaData(Token token) {
 		try {
-			gaiaHubReader.read(token);
+			if (token.getTokenInfo().getEdition() == 1) {
+				// no need to index editions as they all share the same meta data 
+				logger.info("Reading meta data: #" + token.getNftIndex() + " for " + token.getEditionCounter() + " current editions.");
+				gaiaHubReader.read(token);
+			}
 		} catch (JsonProcessingException e) {
 			logger.error(e.getMessage());
 		}
@@ -256,13 +262,25 @@ public class ContractReader {
 	}
 	
 	private void saveTokenToMongo(Token token) {
+		TokenFilter tf = tokenFilterRepository.findByContractIdAndAssetHash(token.getContractId(), token.getTokenInfo().getAssetHash());
+		if (tf != null) {
+			return;
+		}
 		if (token != null) {
 			Token t = tokenRepository.findByContractIdAndNftIndex(token.getContractId(), token.getNftIndex());
 			if (t != null) {
 				token.setId(t.getId());
 			}
 		}
-		tokenRepository.save(token);
+		try {
+			tokenRepository.save(token);
+		} catch (Exception e) {
+			if (token != null && token.getTokenInfo() != null) {
+				logger.info("Filter out duplicates: " + token.getNftIndex() + " : " + token.getTokenInfo().getAssetHash() + " : " + token.getTokenInfo().getEdition() + " : " + token.getContractId());
+			} else {
+				logger.info("Filter out duplicates: " + e.getMessage());
+			}
+		}
 	}
 
 	private Token readToken(String contractId, String assetHash) throws JsonProcessingException {

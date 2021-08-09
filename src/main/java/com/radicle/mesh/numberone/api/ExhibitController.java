@@ -56,18 +56,29 @@ public class ExhibitController {
 		return exhibitRequest;
 	}
 	
+	@PutMapping(value = "/v2/register-to-exhibit")
+	public ExhibitRequest updateExhibitRequest(HttpServletRequest request, @RequestBody ExhibitRequest exhibitRequest) {
+		Optional<ExhibitRequest> er = exhibitRequestRepository.findById(exhibitRequest.getId());
+		exhibitRequest.setId(er.get().getId());
+		exhibitRequest = exhibitRequestRepository.save(exhibitRequest);
+		emailService.sendExhibitRequest(exhibitRequest);
+		return exhibitRequest;
+	}
+	
 	@PutMapping(value = "/v2/change-exhibit-status")
 	public ExhibitRequest changeStatus(HttpServletRequest request, @RequestBody ExhibitRequest exhibitRequest) {
 		Optional<ExhibitRequest> dbER = exhibitRequestRepository.findById(exhibitRequest.getId());
 		if (dbER.isPresent()) {
 			ExhibitRequest e2 = dbER.get();
-			if (e2.getStatus() == 2) {
-				addPrivilege(e2, "can-upload");
-			} else {
-				removePrivilege(e2, "can-upload");
-			}
+//			if (e2.getStatus() == 2) {
+//				addPrivilege(e2, "can-upload");
+//			} else {
+//				removePrivilege(e2, "can-upload");
+//			}
 			e2.setStatus(exhibitRequest.getStatus());
 			exhibitRequest = exhibitRequestRepository.save(e2);
+		} else {
+			exhibitRequest = exhibitRequestRepository.save(exhibitRequest);
 		}
 		return exhibitRequest;
 	}

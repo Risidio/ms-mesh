@@ -101,7 +101,7 @@ squareup:
       redirectUrl: https://tapi.risidio.com/mesh/oauth-redirect
 radicle:
    search:
-      indexurl: http://172.17.0.1:8046/index/indexMetaData/
+      indexurl: http://172.17.0.1:8048/index/indexMetaData/
    stax:
       base-path: http://139.162.204.44:20443
       sidecar-path: http://139.162.204.44:3999
@@ -128,7 +128,7 @@ opennode:
       appEndpoint: https://app.opennode.com
 radicle:
    search:
-      indexurl: http://172.17.0.1:8046/index/indexMetaData/
+      indexurl: http://172.17.0.1:8048/index/indexMetaData/
    stax:
       base-path: http://178.79.138.62:20443
       sidecar-path: http://178.79.138.62:3999
