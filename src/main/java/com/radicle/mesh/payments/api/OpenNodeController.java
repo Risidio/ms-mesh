@@ -93,7 +93,7 @@ public class OpenNodeController {
 //		String encodedAuth = new String(Base64.getEncoder().encode(auth.getBytes(Charset.forName("UTF8"))));
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", environment.getProperty("OPENNODE_API_KEY"));
+		headers.set("Authorization", environment.getProperty("OPENNODE_API_KEY_SM"));
 		// headers.setContentLength(jsonInString.length());
 		return headers;
 	}

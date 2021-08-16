@@ -67,6 +67,19 @@ public class MeshApplication {
 	}
 	
 	@Bean
+	public SquareClient squareStacksMateClient() {
+		com.squareup.square.Environment sqenv = com.squareup.square.Environment.PRODUCTION;
+		if (environment.getProperty("SQUARE_SM_APPLICATION_ID").indexOf("sandbox") > -1) {
+			sqenv = com.squareup.square.Environment.SANDBOX;
+		}
+		SquareClient client = new SquareClient.Builder()
+			    .environment(sqenv)
+			    .accessToken(environment.getProperty("SQUARE_SM_ACCESS_TOKEN"))
+			    .build();
+		return client;
+	}
+
+	@Bean
 	public SquareClient squareClient() {
 		com.squareup.square.Environment sqenv = com.squareup.square.Environment.PRODUCTION;
 		if (environment.getProperty("SQUARE_APPLICATION_ID").indexOf("sandbox") > -1) {
