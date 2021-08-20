@@ -23,7 +23,7 @@ public class Registration {
 
 	@Id
 	private String id;
-	private int status;
+	private String status;
 	private String email;
 	private String assetHash;
 	private String domain;

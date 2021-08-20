@@ -41,21 +41,26 @@ public class OpenNodeController {
 	@Value("${opennode.api.apiEndpoint}") String apiEndpoint;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
+    private static final String CALLBACK_URL = "https://api.risidio.com/mesh/v2/charge/callback";
     private static final String HMAC_SHA512 = "HmacSHA512";
 	@Autowired private Environment environment;
 
 	@PostMapping(value = "/v2/fetchPayment")
 	public String fetchPayment(HttpServletRequest request, @RequestBody OpenNodePayment fetchPayment) {
+		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment=", fetchPayment);
 		String url = apiEndpoint +  "/v1/charges";
 		ResponseEntity<String> response = null;
+		fetchPayment.setCallback_url(CALLBACK_URL);
 		String jsonInString = convertMessage(fetchPayment);
 		HttpEntity<String> entity = new HttpEntity<String>(jsonInString, getHeaders());
+		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment=", fetchPayment);
 		response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 		return response.getBody();
 	}
 
 	@PostMapping(value = "/v2/checkPayment/{paymentId}")
 	public String checkPayment(HttpServletRequest request, @PathVariable String paymentId) {
+		logger.info("PAYMENTS-OPENNODE: checkPayment=", paymentId);
 		String url = apiEndpoint +  "/v1/charge/" + paymentId;
 		try {
 			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<String>(getHeaders()), String.class);
@@ -70,6 +75,7 @@ public class OpenNodeController {
 	public void chargeCallback(@RequestBody String charge) {
 		logger.info("Received callback: " + charge);
 		// id=a2023596-80eb-4891-bf92-9007293b4e76&callback_url=https%3A%2F%2Ftapi.risidio.com%2Fmesh%2Fv2%2Fcharge%2Fcallback&success_url=https%3A%2F%2Fopennode.com&status=processing&order_id=N%2FA&description=Simulating+webhook+processing&price=100000000&fee=0&auto_settle=0&hashed_order=ed145226b96572625933b4ec52d35722534bb93c9c43eecfdd248cb7e80e9ffe
+		// Received callback: id=b0f5a1da-4cf9-48ce-a0a0-e52966c9910f&callback_url=https%3A%2F%2Fapi.risidio.com%2Fmesh%2Fv2%2Fcharge%2Fcallback&success_url=null&status=paid&order_id=null&description=Donation+to+project&price=6006&fee=0&auto_settle=false&fiat_value=1.98&net_fiat_value=1.98&hashed_order=3d19cd4dce77fd035d98b10cac74f490e828c25361ef949a1c0551c048403e02
 		String [] params = charge.split("&");
 		Map<String, String> items = new HashMap<String, String>();
 		for (String param : params) {

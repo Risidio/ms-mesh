@@ -2,6 +2,8 @@ package com.radicle.mesh.common;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -35,6 +37,7 @@ import com.squareup.square.SquareClient;
 public class MeshApplication {
 
 	@Autowired private Environment environment;
+    private static final Logger logger = LogManager.getLogger(MeshApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(MeshApplication.class, args);
@@ -72,6 +75,8 @@ public class MeshApplication {
 		if (environment.getProperty("SQUARE_SM_APPLICATION_ID").indexOf("sandbox") > -1) {
 			sqenv = com.squareup.square.Environment.SANDBOX;
 		}
+		logger.info("PAYMENTS-Square: SQUARE_SM_ACCESS_TOKEN" + environment.getProperty("SQUARE_SM_APPLICATION_ID"));
+		logger.info("PAYMENTS-Square: SQUARE_SM_ACCESS_TOKEN");
 		SquareClient client = new SquareClient.Builder()
 			    .environment(sqenv)
 			    .accessToken(environment.getProperty("SQUARE_SM_ACCESS_TOKEN"))
@@ -85,6 +90,8 @@ public class MeshApplication {
 		if (environment.getProperty("SQUARE_APPLICATION_ID").indexOf("sandbox") > -1) {
 			sqenv = com.squareup.square.Environment.SANDBOX;
 		}
+		logger.info("PAYMENTS-Square: SQUARE_ACCESS_TOKEN");
+		logger.info("PAYMENTS-Square: SQUARE_ACCESS_TOKEN");
 		SquareClient client = new SquareClient.Builder()
 			    .environment(sqenv)
 			    .accessToken(environment.getProperty("SQUARE_ACCESS_TOKEN"))

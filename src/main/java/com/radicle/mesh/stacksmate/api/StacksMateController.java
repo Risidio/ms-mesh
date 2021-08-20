@@ -1,7 +1,10 @@
 package com.radicle.mesh.stacksmate.api;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +23,7 @@ import com.radicle.mesh.stacksmate.service.domain.StacksMateTransaction;
 @RestController
 public class StacksMateController {
 
+    private static final Logger logger = LogManager.getLogger(StacksMateController.class);
 	@Autowired private StacksMateRepository stacksMateRepository;
 
 	@PostMapping(value = "/v2/stacksmate/transactions")
@@ -32,6 +36,10 @@ public class StacksMateController {
 	@PutMapping(value = "/v2/stacksmate/transactions")
 	public StacksMateTransaction update(@RequestBody StacksMateTransaction stacksMateTransaction)
 			throws JsonMappingException, JsonProcessingException {
+		Optional<StacksMateTransaction> smt = stacksMateRepository.findById(stacksMateTransaction.getId());
+		if (smt.isPresent()) {
+			stacksMateTransaction.setId(smt.get().getId());
+		}
 		stacksMateTransaction = stacksMateRepository.save(stacksMateTransaction);
 		return stacksMateTransaction;
 	}
@@ -51,6 +59,7 @@ public class StacksMateController {
 
 	@GetMapping(value = "/v2/stacksmate/transactions/{recipient}")
 	public List<StacksMateTransaction> getTransactions(@PathVariable String recipient) {
+		logger.info("SM-TRANSACTIONS: getTransactions - recipient=", recipient);
 		Sort sort = Sort.by("timeSent").descending();
 		List<StacksMateTransaction> smt = stacksMateRepository.findByRecipient(recipient, sort);
 		return smt;
@@ -58,12 +67,14 @@ public class StacksMateController {
 
 	@GetMapping(value = "/v2/stacksmate/transaction-recent")
 	public StacksMateTransaction getRecentTransaction() {
+		logger.info("SM-TRANSACTIONS: getTransactions - findTopByOrderByNonceDesc");
 		StacksMateTransaction smt = stacksMateRepository.findTopByOrderByNonceDesc();
 		return smt;
 	}
 
 	@GetMapping(value = "/v2/stacksmate/transactions")
 	public List<StacksMateTransaction> getTransactions() {
+		logger.info("SM-TRANSACTIONS: getTransactions - findAll");
 		List<StacksMateTransaction> smts = stacksMateRepository.findAll();
 		return smts;
 	}

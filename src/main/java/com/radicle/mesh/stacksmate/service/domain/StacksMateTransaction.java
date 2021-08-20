@@ -26,6 +26,7 @@ public class StacksMateTransaction {
 	private String paymentOrderId;
 	private String paymentStatus;
 	private String paymentId;
+	private String paymentTx;
 	private String paymentCode;
 	private String paymentAmount;
 	private String paymentCurrency;
@@ -36,5 +37,5 @@ public class StacksMateTransaction {
 	private Long timeSent;
 	private Long microstx;
 	private String recipient;
-	
+
 }

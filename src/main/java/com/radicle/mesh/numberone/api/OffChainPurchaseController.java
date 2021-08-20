@@ -38,7 +38,7 @@ public class OffChainPurchaseController {
 
 	@PostMapping(value = "/v2/register/email")
 	public Boolean registerEmail(HttpServletRequest request, @RequestBody Registration registration) {
-		registration.setStatus(0);
+		// registration.setStatus("zero");
 		registrationRepository.save(registration);
 		emailService.sendRegisterInterestEmail(registration.getEmail(), registration.getEmailContent());
 		return true;

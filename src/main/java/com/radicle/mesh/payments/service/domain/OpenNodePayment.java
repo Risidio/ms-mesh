@@ -17,6 +17,7 @@ public class OpenNodePayment {
 
 	private String amount;
 	private String description;
+	private String callback_url;
 	private Boolean routeHints;
 
 	public OpenNodePayment() {

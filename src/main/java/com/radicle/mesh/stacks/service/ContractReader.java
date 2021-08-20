@@ -80,16 +80,15 @@ public class ContractReader {
 		}
 		appMapContract.setAdminContractAddress(adminContractAddress);
 		appMapContract.setAdminContractName(adminContractName);
+		appMapContractRepository.deleteAll();
 		readAppMap(appMapContract, adminContractAddress + "." + adminContractName, ReadOnlyFunctionNames.GET_CONTRACT_DATA);
 		appMapContractRepository.save(appMapContract);
 		readApplications(appMapContract);
-		List<Application> applications = appMapContract.getApplications();
+		List<Application> applications = applicationRepository.findAll();
 		if (applications != null) {
 			for (Application application : applications) {
 				logger.info("Applications -> " + application.toString());
 				if (application.getStatus() > -1) {
-					readTokenContract(application);
-					applicationRepository.save(application);
 					readTokens(application);
 				}
 			}
@@ -97,53 +96,6 @@ public class ContractReader {
 		this.registry = appMapContract;
 		return this.registry;
 	}
-
-//	public Application read(AppMapContract appMapContract, String contractId) throws JsonProcessingException {
-//		Application appl = null;
-//		if (appMapContract.getApplications() == null) return null;
-//		for (Application application : appMapContract.getApplications()) {
-//			if (application.getContractId().equals(contractId)) {
-//				readTokenContract(application);
-//				readTokens(application);
-//				appl = application;
-//			}
-//		}
-//		return appl;
-//	}
-
-//	public Token read(AppMapContract appMapContract, String contractId, long nftIndex) throws JsonProcessingException {
-//		List<Application> applications = appMapContract.getApplications();
-//		if (applications == null) return null;
-//		Token t = null;
-//		for (Application application : applications) {
-//			if (application.getContractId().equals(contractId)) {
-//				for (Token token : application.getTokenContract().getTokens()) {
-//					if (token.getNftIndex() == nftIndex) {
-//						token = readToken(application, nftIndex);
-//						t = token;
-//					}
-//				}
-//			}
-//		}
-//		return t;
-//	}
-
-//	public Token read(AppMapContract appMapContract, String contractId, String assetHash) throws JsonProcessingException {
-//		List<Application> applications = appMapContract.getApplications();
-//		if (applications == null) return null;
-//		Token t = null;
-//		for (Application application : applications) {
-//			if (application.getContractId().equals(contractId)) {
-//				for (Token token : application.getTokenContract().getTokens()) {
-//					if (token.getTokenInfo().getAssetHash().equals(assetHash)) {
-//						token = readToken(application, assetHash);
-//						t = token;
-//					}
-//				}
-//			}
-//		}
-//		return t;
-//	}
 
 	@SuppressWarnings("unchecked")
 	private void readAppMap(AppMapContract appMapContract, String contractId, ReadOnlyFunctionNames fname) throws JsonMappingException, JsonProcessingException {
@@ -166,19 +118,14 @@ public class ContractReader {
 	private void readApplications(AppMapContract appMapContract) throws JsonMappingException, JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_APP;
 		String path = path(fname.getName());
+		applicationRepository.deleteAll();
 		for (long i = 0; i < appMapContract.getAppCounter(); i++) {
 			String arg1 = claritySerialiser.serialiseInt(BigInteger.valueOf(i));
 			String response = readFromStacks(path, new String[] {arg1});
 			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
 			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
-			Application aFromDb = applicationRepository.findByContractId(a.getContractId());
-			if (aFromDb != null) {
-				a.setId(aFromDb.getId()); // update
-			}
+			readTokenContract(a);
 			applicationRepository.save(a);
-			if (a != null && a.getStatus() > -1) {
-				appMapContract.addApplication(a);
-			}
 		}
 	}
 
@@ -194,12 +141,13 @@ public class ContractReader {
 
 	private void readTokens(Application application) throws JsonMappingException, JsonProcessingException {
 		TokenContract tokenContract = application.getTokenContract();
+		Token token = null;
+		tokenRepository.deleteByContractId(application.getContractId());
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
-			Token token = readToken(application.getContractId(), index);
+			token = readToken(application.getContractId(), index);
 			logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 			if (token != null) {
-				// tokenContract.addToken(token);
-				readMetaData(token);
+				tokenRepository.save(token);
 			}
 		}
 	}
@@ -207,18 +155,23 @@ public class ContractReader {
 	public Token readSpecificToken(String contractId, Long nftIndex) throws JsonMappingException, JsonProcessingException {
 		Token token = readToken(contractId, nftIndex);
 		if (token != null) {
-			readMetaData(token);
+			// do this is separate thread
+			// see GaiaHubReader.buildSearchIndex
+			// readMetaData(token);
+			saveTokenToMongo(token);
 		}
 		return token;
 	}
 	
-	public Token readSpecificToken(String contractId, String assetHash) throws JsonMappingException, JsonProcessingException {
-		Token token = readToken(contractId, assetHash);
-		if (token != null) {
-			readMetaData(token);
-		}
-		return token;
-	}
+//	public Token readSpecificToken(String contractId, String assetHash) throws JsonMappingException, JsonProcessingException {
+//		Token token = readToken(contractId, assetHash);
+//		if (token != null) {
+//			// do this is separate thread
+//			// see GaiaHubReader.buildSearchIndex
+//			// readMetaData(token);
+//		}
+//		return token;
+//	}
 	
 	@Async
 	public void readMetaData(Token token) {
@@ -252,7 +205,6 @@ public class ContractReader {
 						e.printStackTrace();
 					}
 					t = token;
-					saveTokenToMongo(token);
 				}
 			}
 		} catch (Exception e) {
@@ -283,28 +235,28 @@ public class ContractReader {
 		}
 	}
 
-	private Token readToken(String contractId, String assetHash) throws JsonProcessingException {
-		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_HASH;
-		// String arg1 = claritySerialiser.serialiseUInt(assetHash);
-		String path = path(contractId, fname.getName());
-		String arg1 = claritySerialiser.serialiseHexString(assetHash);
-		String response = readFromStacks(path, new String[] { arg1 });
-		Token t = null;
-		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-		if (data != null) {
-			Map<String, Object> data1 = (Map)data.get(fname.getName());
-			if (data1 != null) {
-				ClarityType ct = (ClarityType)data1.get("nftIndex");
-				long nftIndex = ((BigInteger)ct.getValue()).longValue();
- 				Token token = Token.fromMap(nftIndex, (Map)data.get(fname.getName()), contractId);
-				token.setOfferHistory(readOffers(contractId, nftIndex, token.getOfferCounter()));
-				token.setBidHistory(readBids(contractId, nftIndex, token.getBidCounter()));
-				t = token;
-				saveTokenToMongo(token);
-			}
-		}
-		return t;
-	}
+//	private Token readToken(String contractId, String assetHash) throws JsonProcessingException {
+//		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_TOKEN_BY_HASH;
+//		// String arg1 = claritySerialiser.serialiseUInt(assetHash);
+//		String path = path(contractId, fname.getName());
+//		String arg1 = claritySerialiser.serialiseHexString(assetHash);
+//		String response = readFromStacks(path, new String[] { arg1 });
+//		Token t = null;
+//		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
+//		if (data != null) {
+//			Map<String, Object> data1 = (Map)data.get(fname.getName());
+//			if (data1 != null) {
+//				ClarityType ct = (ClarityType)data1.get("nftIndex");
+//				long nftIndex = ((BigInteger)ct.getValue()).longValue();
+// 				Token token = Token.fromMap(nftIndex, (Map)data.get(fname.getName()), contractId);
+//				token.setOfferHistory(readOffers(contractId, nftIndex, token.getOfferCounter()));
+//				token.setBidHistory(readBids(contractId, nftIndex, token.getBidCounter()));
+//				t = token;
+//				saveTokenToMongo(token);
+//			}
+//		}
+//		return t;
+//	}
 
 	private List<Offer> readOffers(String contractId, long nftIndex, long offerCounter) throws JsonMappingException, JsonProcessingException {
 		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_OFFER_AT_INDEX;

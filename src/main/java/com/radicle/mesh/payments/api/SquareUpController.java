@@ -21,7 +21,6 @@ import com.squareup.square.exceptions.ApiException;
 import com.squareup.square.models.CreatePaymentRequest;
 import com.squareup.square.models.CreatePaymentResponse;
 import com.squareup.square.models.Money;
-import com.squareup.square.models.Payment;
 
 @RestController
 //@CrossOrigin(origins = { "http://localhost:8085", "http://localhost:8082", "http://localhost:8080", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
@@ -38,7 +37,8 @@ public class SquareUpController {
 	}
 
 	@PostMapping(value = "/v1/square/charge")
-	public Payment charge(@RequestBody SquarePaymentRequest paymentRequest) throws ApiException, IOException {
+	public CreatePaymentResponse charge(@RequestBody SquarePaymentRequest paymentRequest) throws ApiException, IOException {
+		logger.info("PAYMENTS-Square: Creating Charge", squareClient);
 		Money bodyAmountMoney = new Money.Builder()
 			    .amount(paymentRequest.getAmountFiat())
 			    .currency(paymentRequest.getCurrency())
@@ -54,8 +54,14 @@ public class SquareUpController {
 		PaymentsApi paymentsApi = squareClient.getPaymentsApi();
 		CreatePaymentResponse cpr = paymentsApi.createPayment(body);
 		if (cpr.getErrors() == null || cpr.getErrors().size() == 0) {
-			return cpr.getPayment();
+			return cpr;
 		}
-		throw new RuntimeException(mapper.writeValueAsString(cpr.getErrors()));
+		for (com.squareup.square.models.Error e : cpr.getErrors()) {
+			logger.info("PAYMENTS-Square: Error Code" + e.getCode());
+			logger.info("PAYMENTS-Square: Error Field" + e.getField());
+			logger.info("PAYMENTS-Square: Error Category" + e.getCategory());
+			logger.info("PAYMENTS-Square: Error Detail" + e.getDetail());
+		}
+		return cpr;
 	}
 }

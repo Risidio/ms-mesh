@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radicle.mesh.stacks.model.stxbuffer.gaia.AppsModel;
 import com.radicle.mesh.stacks.model.stxbuffer.gaia.UserAppMaps;
+import com.radicle.mesh.stacks.service.domain.Application;
 import com.radicle.mesh.stacks.service.domain.Token;
 
 import lombok.AllArgsConstructor;
@@ -47,6 +48,7 @@ public class GaiaHubReader {
 	@Autowired private RestOperations restTemplate;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private TokenRepository tokenRepository;
+	@Autowired private ApplicationRepository applicationRepository;
 
 	@Async
 	public void buildSearchIndexAsync() throws JsonProcessingException {
@@ -54,9 +56,16 @@ public class GaiaHubReader {
 	}
 	
 	public void buildSearchIndex() throws JsonProcessingException {
-		List<Token> tokens = tokenRepository.findAll();
-		for (Token token : tokens) {
-			read(token);
+		List<Application> applications = applicationRepository.findAll();
+		if (applications != null) {
+			for (Application application : applications) {
+				if (application.getStatus() > -1) {
+					List<Token> tokens = tokenRepository.findByContractIdAndEdition(application.getContractId(), 1L);
+					for (Token token : tokens) {
+						read(token);
+					}
+				}
+			}
 		}
 	}
 
@@ -68,36 +77,9 @@ public class GaiaHubReader {
 			String assetJson = response.getBody();
 			sendToSearch(token.getContractId(), assetJson);
 		} catch (RestClientException e) {
-			logger.error("Nothing found at: " + metaDataUrl);
+			// logger.error("Nothing found at: " + metaDataUrl);
 		}
 	}
-	
-//	public void read(String appOrigin, String gaiaFilename, String gaiaUsername) throws JsonProcessingException {
-//		readHubUrls(gaiaUsername);
-//		readAppData(appOrigin, gaiaFilename, gaiaUsername);
-//	}
-//	
-//	private void readAppData(String appOrigin, String gaiaFilename, String gaiaUsername) throws JsonProcessingException {
-//		try {
-//			UserAppMaps hubUrls = readUrls.get(gaiaUsername);
-//			Map<String, AppsModel> apps = hubUrls.getApps();
-//			AppsModel appsModel = apps.get(appOrigin);
-//			String path = appsModel.getStorage() + gaiaFilename;
-//			
-//			String response = readFromStacks(path);
-//			String key = appOrigin + "__" + gaiaUsername;
-//			// logger.info("App data response " + response);
-//			appData.put(key, response);
-//		} catch (Exception e) {
-//		}
-//	}
-	
-//	private void readHubUrls(String gaiaUsername) throws JsonProcessingException {
-//		String path = basePath + gaiaUsername;
-//		String response = readFromStacks(path);
-//		UserAppMaps uam = parseApps(response, gaiaUsername);
-//		readUrls.put(gaiaUsername, uam);
-//	}
 	
 	private String sendToSearch(String projectId, String jsonBlob) throws JsonProcessingException {
 		HttpHeaders headers = new HttpHeaders();
@@ -107,16 +89,6 @@ public class GaiaHubReader {
 		ResponseEntity<String> response = restTemplate.exchange(indexUrl + projectId, HttpMethod.POST, requestEntity, String.class);
 		return response.getBody();
 	}
-	
-//	private String readFromStacks(String path) throws JsonProcessingException {
-//		HttpHeaders headers = new HttpHeaders();
-//		headers.setContentType(MediaType.APPLICATION_JSON);
-//		HttpEntity<String> requestEntity = new HttpEntity<String>(headers);
-//		
-//		ResponseEntity<String> response = null;
-//		response = restTemplate.exchange(path, HttpMethod.GET, requestEntity, String.class);
-//		return response.getBody();
-//	}
 	
 	public UserAppMaps parseApps(String profile, String gaiaUsername) throws JsonMappingException, JsonProcessingException {
 		Map<String, Object> rates = mapper.readValue(profile, new TypeReference<Map<String, Object>>() {});
