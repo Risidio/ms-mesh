@@ -22,6 +22,8 @@ import lombok.ToString;
 public class TokenFilter {
 	
 	@Id private String id;
+	private Long nftIndex;
+	private String stxAddress;
 	private String assetHash;
 	private String contractId;
 	

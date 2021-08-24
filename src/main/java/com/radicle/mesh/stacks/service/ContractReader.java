@@ -179,7 +179,7 @@ public class ContractReader {
 			if (token.getTokenInfo().getEdition() == 1) {
 				// no need to index editions as they all share the same meta data 
 				logger.info("Reading meta data: #" + token.getNftIndex() + " for " + token.getEditionCounter() + " current editions.");
-				gaiaHubReader.read(token);
+				gaiaHubReader.index(token);
 			}
 		} catch (JsonProcessingException e) {
 			logger.error(e.getMessage());
@@ -221,6 +221,7 @@ public class ContractReader {
 		if (token != null) {
 			Token t = tokenRepository.findByContractIdAndNftIndex(token.getContractId(), token.getNftIndex());
 			if (t != null) {
+				// an update existing as opposed to a save new
 				token.setId(t.getId());
 			}
 		}

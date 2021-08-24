@@ -62,14 +62,15 @@ public class GaiaHubReader {
 				if (application.getStatus() > -1) {
 					List<Token> tokens = tokenRepository.findByContractIdAndEdition(application.getContractId(), 1L);
 					for (Token token : tokens) {
-						read(token);
+						logger.info("Indexing: Token #" + token.getNftIndex() + " Edition: " + token.getTokenInfo().getEdition());
+						index(token);
 					}
 				}
 			}
 		}
 	}
 
-	public void read(Token token) throws JsonProcessingException {
+	public void index(Token token) throws JsonProcessingException {
 		String metaDataUrl = token.getTokenInfo().getMetaDataUrl();
 		try {
 			HttpEntity<String> he = new HttpEntity<String>(new HttpHeaders());

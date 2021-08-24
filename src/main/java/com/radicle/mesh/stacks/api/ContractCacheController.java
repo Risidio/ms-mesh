@@ -39,6 +39,7 @@ import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdateResult;
 import com.radicle.mesh.stacks.service.AppMapContractRepository;
 import com.radicle.mesh.stacks.service.ApplicationRepository;
 import com.radicle.mesh.stacks.service.ContractReader;
+import com.radicle.mesh.stacks.service.GaiaHubReader;
 import com.radicle.mesh.stacks.service.TokenFilterRepository;
 import com.radicle.mesh.stacks.service.TokenRepository;
 import com.radicle.mesh.stacks.service.domain.AppMapContract;
@@ -62,6 +63,7 @@ public class ContractCacheController {
 	@Autowired private TokenFilterRepository tokenFilterRepository;
 	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
 	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
+	@Autowired private GaiaHubReader gaiaHubReader;
 
 	@PostMapping(value = "/v2/cache/update")
 	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
@@ -84,6 +86,7 @@ public class ContractCacheController {
 		}
 		logger.info("Read cached token: " + token);
 		if (token != null) {
+			gaiaHubReader.index(token);
 			List<Token> tokens = new ArrayList<Token>();
 			tokens.add(token);
 			CacheUpdateResult cr = new CacheUpdateResult(tokens, cacheUpdate);
