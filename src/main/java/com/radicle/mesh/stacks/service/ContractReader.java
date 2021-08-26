@@ -81,7 +81,7 @@ public class ContractReader {
 		appMapContract.setAdminContractAddress(adminContractAddress);
 		appMapContract.setAdminContractName(adminContractName);
 		appMapContractRepository.deleteAll();
-		readAppMap(appMapContract, adminContractAddress + "." + adminContractName, ReadOnlyFunctionNames.GET_CONTRACT_DATA);
+		readAppMap(appMapContract);
 		appMapContractRepository.save(appMapContract);
 		readApplications(appMapContract);
 		List<Application> applications = applicationRepository.findAll();
@@ -98,11 +98,15 @@ public class ContractReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void readAppMap(AppMapContract appMapContract, String contractId, ReadOnlyFunctionNames fname) throws JsonMappingException, JsonProcessingException {
-		String path = path(fname.getName());
+	public AppMapContract readAppMap(AppMapContract appMapContract) throws JsonMappingException, JsonProcessingException {
+		if (appMapContract == null) {
+			appMapContract = new AppMapContract();
+		}
+		String fname = ReadOnlyFunctionNames.GET_CONTRACT_DATA.getName();
+		String path = path(ReadOnlyFunctionNames.GET_CONTRACT_DATA.getName());
 		String response = readFromStacks(path, new String[0]);
-		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-		Map<String, Object> data1 = (Map<String, Object>)data.get(fname.getName());
+		Map<String, Object> data = clarityDeserialiser.deserialise(fname, response);
+		Map<String, Object> data1 = (Map<String, Object>)data.get(fname);
 		if (data1 != null) {
 			if (data1.containsKey(APP_COUNTER)) {
 				ClarityType ct = (ClarityType) data1.get(APP_COUNTER);
@@ -113,20 +117,26 @@ public class ContractReader {
 				logger.info("No mapping for appCounter?");
 			}
 		}
+		return appMapContract;
 	}
 
 	private void readApplications(AppMapContract appMapContract) throws JsonMappingException, JsonProcessingException {
-		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_APP;
-		String path = path(fname.getName());
 		applicationRepository.deleteAll();
 		for (long i = 0; i < appMapContract.getAppCounter(); i++) {
-			String arg1 = claritySerialiser.serialiseInt(BigInteger.valueOf(i));
-			String response = readFromStacks(path, new String[] {arg1});
-			Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
-			Application a = Application.fromMap(i, (Map)data.get(fname.getName()));
-			readTokenContract(a);
+			Application a = readApplication(i);
 			applicationRepository.save(a);
 		}
+	}
+	
+	public Application readApplication(Long appIndex) throws JsonMappingException, JsonProcessingException {
+		ReadOnlyFunctionNames fname = ReadOnlyFunctionNames.GET_APP;
+		String path = path(fname.getName());
+		String arg1 = claritySerialiser.serialiseInt(BigInteger.valueOf(appIndex));
+		String response = readFromStacks(path, new String[] {arg1});
+		Map<String, Object> data = clarityDeserialiser.deserialise(fname.getName(), response);
+		Application a = Application.fromMap(appIndex, (Map)data.get(fname.getName()));
+		readTokenContract(a);
+		return a;
 	}
 
 	private void readTokenContract(Application application) throws JsonMappingException, JsonProcessingException {
@@ -142,12 +152,11 @@ public class ContractReader {
 	private void readTokens(Application application) throws JsonMappingException, JsonProcessingException {
 		TokenContract tokenContract = application.getTokenContract();
 		Token token = null;
-		tokenRepository.deleteByContractId(application.getContractId());
 		for (long index = 0; index < tokenContract.getMintCounter(); index++) {
 			token = readToken(application.getContractId(), index);
 			logger.info("Applications -> Token Contract -> Token -> " + token.toString());
 			if (token != null) {
-				tokenRepository.save(token);
+				saveTokenToMongo(token);
 			}
 		}
 	}

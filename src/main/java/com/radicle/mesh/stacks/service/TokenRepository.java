@@ -27,4 +27,6 @@ public interface TokenRepository extends MongoRepository<Token, String> {
 	public List<Token> findByContractId(String contractId);
 
 	public void deleteByContractId(String contractId);
+	
+	public void deleteByContractIdAndNftIndex(String contractId, Long nftIndex);
 }
