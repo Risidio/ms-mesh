@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,13 +68,18 @@ public class EmailServiceImpl implements EmailService {
     	SendSmtpEmail message = new SendSmtpEmail();
     	message.setSubject("Request to Exhibit");
     	String htmlContent = getTemplate(emailTemplate1Name);
-    	String content = exhibitRequest.getName() + " has requested exhibition space. \n\n"; 
-    	content += "Email address: " + exhibitRequest.getEmail() + ". \n"; 
-    	content += "Stacks address: " + exhibitRequest.getStxAddress() + ". \n\n"; 
-    	content += "To approve goto: <a href=\"https://thisisnumberone.com/admin/exhibit-requests\"></a>"; 
-    	htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", content);
-    	message.setHtmlContent(htmlContent);
-    	// message.setHtmlContent("Thanks for registering your interest.");
+    	String content = "{0} has requested exhibition space. <br><br>"
+    			+ "Email address: {1}. <br>"
+    			+ "Stacks address: {2}. <br><br>"
+    			+ "To approve go to: <a href=\\\"https://thisisnumberone.com/admin/exhibit-requests\\\">Exhibit Requests</a>";
+    	
+		String requestorName = exhibitRequest.getName() == null ? exhibitRequest.getStxAddress()
+				: exhibitRequest.getName();
+
+		htmlContent = htmlContent.replaceAll("CLIENT_TEXT1", MessageFormat.format(content, requestorName,
+				exhibitRequest.getEmail(), exhibitRequest.getStxAddress()));
+		message.setHtmlContent(htmlContent);
+    	
 		SendSmtpEmail sendSmtpEmail = getSmtpEmail(message, adminEmail);
     	return send(sendSmtpEmail);
 	}
