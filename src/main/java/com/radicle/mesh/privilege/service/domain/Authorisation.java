@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "StacksMateTransaction")
+@TypeAlias(value = "LoopbombConfig")
 @Document
 public class Authorisation {
 

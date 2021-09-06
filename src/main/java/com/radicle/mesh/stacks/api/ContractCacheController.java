@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.radicle.mesh.stacks.model.Principal;
 import com.radicle.mesh.stacks.model.stxbuffer.types.CacheQuery;
-import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdate;
 import com.radicle.mesh.stacks.model.stxbuffer.types.CacheUpdateResult;
 import com.radicle.mesh.stacks.service.AppMapContractRepository;
 import com.radicle.mesh.stacks.service.ApplicationRepository;
@@ -46,6 +45,7 @@ import com.radicle.mesh.stacks.service.domain.AppMapContract;
 import com.radicle.mesh.stacks.service.domain.Application;
 import com.radicle.mesh.stacks.service.domain.Token;
 import com.radicle.mesh.stacks.service.domain.TokenFilter;
+import com.radicle.mesh.stacksactions.service.domain.StacksTransaction;
 
 @RestController
 public class ContractCacheController {
@@ -66,19 +66,19 @@ public class ContractCacheController {
 	@Autowired private GaiaHubReader gaiaHubReader;
 
 	@PostMapping(value = "/v2/cache/update")
-	public Token cacheUpdate(HttpServletRequest request, @RequestBody CacheUpdate cacheUpdate) throws JsonMappingException, JsonProcessingException {
+	public Token cacheUpdate(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) throws JsonMappingException, JsonProcessingException {
 		Token token = null;
 		try {
-			if (cacheUpdate.getFunctionName().startsWith("mint-")) {
-				Long tokenCount = tokenRepository.countByContractId(cacheUpdate.getContractId());
-				token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenCount);
-			} else if (cacheUpdate.getNftIndex() != null && cacheUpdate.getNftIndex() > -1) {
-				token = contractReader.readSpecificToken(cacheUpdate.getContractId(), cacheUpdate.getNftIndex());
-			} else if (cacheUpdate.getAssetHash() != null) {
+			if (stacksTransaction.getFunctionName().startsWith("mint-")) {
+				Long tokenCount = tokenRepository.countByContractId(stacksTransaction.getContractId());
+				token = contractReader.readSpecificToken(stacksTransaction.getContractId(), tokenCount);
+			} else if (stacksTransaction.getNftIndex() != null && stacksTransaction.getNftIndex() > -1) {
+				token = contractReader.readSpecificToken(stacksTransaction.getContractId(), stacksTransaction.getNftIndex());
+			} else if (stacksTransaction.getAssetHash() != null) {
 			    // PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
-			    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(cacheUpdate.getAssetHash(), 1L);
+			    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(stacksTransaction.getAssetHash(), 1L);
 				if (tokenPage != null && !tokenPage.isEmpty()) {
-					token = contractReader.readSpecificToken(cacheUpdate.getContractId(), tokenPage.get(0).getNftIndex());
+					token = contractReader.readSpecificToken(stacksTransaction.getContractId(), tokenPage.get(0).getNftIndex());
 				}
 			}
 		} catch (Exception e) {
@@ -89,8 +89,8 @@ public class ContractCacheController {
 			gaiaHubReader.index(token);
 			List<Token> tokens = new ArrayList<Token>();
 			tokens.add(token);
-			CacheUpdateResult cr = new CacheUpdateResult(tokens, cacheUpdate);
-			simpMessagingTemplate.convertAndSend("/queue/contract-news-" + cacheUpdate.getContractId(), cr);
+			CacheUpdateResult cr = new CacheUpdateResult(tokens, stacksTransaction);
+			simpMessagingTemplate.convertAndSend("/queue/contract-news-" + stacksTransaction.getContractId(), cr);
 		}
 		return token;
 	}
@@ -99,6 +99,12 @@ public class ContractCacheController {
 	public String buildCache() throws JsonProcessingException {
 		contractReader.buildCacheAsync();
 		return "Cache builder called...";
+	}
+
+	@GetMapping(value = "/v2/build-cache/{contractId}")
+	public String buildCache(@PathVariable String contractId) throws JsonProcessingException {
+		contractReader.buildCacheAsync(contractId);
+		return "Cache builder called for contract: " + contractId;
 	}
 
 	@GetMapping(value = "/v2/registry")

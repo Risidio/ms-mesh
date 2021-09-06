@@ -70,10 +70,15 @@ public class ContractReader {
 
 	@Async
 	public void buildCacheAsync() throws JsonProcessingException {
-		buildCache();
+		buildCache(null);
 	}
 	
-	public AppMapContract buildCache() throws JsonProcessingException {
+	@Async
+	public void buildCacheAsync(String contractId) throws JsonProcessingException {
+		buildCache(contractId);
+	}
+	
+	public AppMapContract buildCache(String contractId) throws JsonProcessingException {
 		AppMapContract appMapContract = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		if (appMapContract == null) {
 			appMapContract = new AppMapContract();
@@ -87,9 +92,11 @@ public class ContractReader {
 		List<Application> applications = applicationRepository.findAll();
 		if (applications != null) {
 			for (Application application : applications) {
-				logger.info("Applications -> " + application.toString());
-				if (application.getStatus() > -1) {
-					readTokens(application);
+				if (contractId == null || contractId.equals(application.getContractId())) {
+					logger.info("Application: -> " + application.toString());
+					if (application.getStatus() > -1) {
+						readTokens(application);
+					}
 				}
 			}
 		}

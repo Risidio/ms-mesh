@@ -52,18 +52,25 @@ public class GaiaHubReader {
 
 	@Async
 	public void buildSearchIndexAsync() throws JsonProcessingException {
-		buildSearchIndex();
+		buildSearchIndex(null);
 	}
 	
-	public void buildSearchIndex() throws JsonProcessingException {
+	@Async
+	public void buildSearchIndexAsync(String contractId) throws JsonProcessingException {
+		buildSearchIndex(contractId);
+	}
+	
+	public void buildSearchIndex(String contractId) throws JsonProcessingException {
 		List<Application> applications = applicationRepository.findAll();
 		if (applications != null) {
 			for (Application application : applications) {
-				if (application.getStatus() > -1) {
-					List<Token> tokens = tokenRepository.findByContractIdAndEdition(application.getContractId(), 1L);
-					for (Token token : tokens) {
-						logger.info("Indexing: Token #" + token.getNftIndex() + " Edition: " + token.getTokenInfo().getEdition());
-						index(token);
+				if (contractId == null || contractId.equals(application.getContractId())) {
+					if (application.getStatus() > -1) {
+						List<Token> tokens = tokenRepository.findByContractIdAndEdition(application.getContractId(), 1L);
+						for (Token token : tokens) {
+							logger.info("Indexing: Token #" + token.getNftIndex() + " Edition: " + token.getTokenInfo().getEdition());
+							index(token);
+						}
 					}
 				}
 			}

@@ -1,12 +1,11 @@
 package com.radicle.mesh.stacks.api;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,14 +20,21 @@ public class GaiaController {
 
 	@Scheduled(fixedDelay=3600000)
 	public void collectGaiaHubRecords() throws JsonProcessingException {
-		gaiaHubReader.buildSearchIndex();
+		gaiaHubReader.buildSearchIndex(null);
 	}
 
 	@GetMapping(value = "/v2/gaia/indexFiles")
-	public String indexFiles(HttpServletRequest request) throws JsonProcessingException {
+	public String indexFiles() throws JsonProcessingException {
 		gaiaHubReader.buildSearchIndexAsync();
 		return "indexing gaia data now..";
 	}
+
+	@GetMapping(value = "/v2/gaia/indexFiles/{contractId}")
+	public String indexFiles(@PathVariable String contractId) throws JsonProcessingException {
+		gaiaHubReader.buildSearchIndexAsync(contractId);
+		return "Cache indexer called for contract: " + contractId;
+	}
+
 
 //	@PostMapping(value = "/v2/gaia/rootFile")
 //	public String rootFile1(HttpServletRequest request, @RequestBody RootFilePostModel rootFilePostModel) {

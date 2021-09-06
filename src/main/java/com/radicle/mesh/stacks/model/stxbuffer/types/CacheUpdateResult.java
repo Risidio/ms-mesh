@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.annotation.TypeAlias;
 
 import com.radicle.mesh.stacks.service.domain.Token;
+import com.radicle.mesh.stacksactions.service.domain.StacksTransaction;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,6 @@ import lombok.ToString;
 public class CacheUpdateResult {
 
 	private List<Token >tokens;
-	private CacheUpdate cacheUpdate;
+	private StacksTransaction stacksTransaction;
 
 }

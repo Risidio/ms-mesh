@@ -38,7 +38,7 @@ public class ContractCacheBuilder {
 	 */
 	@Scheduled(fixedDelay=43200000)
 	public void buildCache() throws JsonProcessingException {
-		contractReader.buildCache();
+		contractReader.buildCache(null);
 	}
 
 	/**
@@ -51,11 +51,12 @@ public class ContractCacheBuilder {
 		AppMapContract appMapContractDb = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		if (appMapContract.getAppCounter() != appMapContractDb.getAppCounter()) {
 			// TODO new applications to cache - just rebuild the whole cache and improve this strategy later
-			contractReader.buildCache();
+			contractReader.buildCache(null);
 			return;
 		}
 		for (long i = 0; i < appMapContract.getAppCounter(); i++) {
 			Application application = contractReader.readApplication(i);
+			updateApp(application);
 			Long numbTokensDb = tokenRepository.countByContractId(application.getContractId());
 			Long numbTokens = application.getTokenContract().getMintCounter();
 			if (numbTokensDb < numbTokens) {
@@ -68,5 +69,11 @@ public class ContractCacheBuilder {
 				simpMessagingTemplate.convertAndSend("/queue/contract-news-" + application.getContractId(), cr);
 			}
 		}
+	}
+	
+	private void updateApp(Application application) {
+		Application dbApplication = applicationRepository.findByContractId(application.getContractId());
+		application.setId(dbApplication.getId());
+		applicationRepository.save(application);
 	}
 }
