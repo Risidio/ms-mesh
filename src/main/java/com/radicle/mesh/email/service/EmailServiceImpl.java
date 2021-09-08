@@ -71,7 +71,7 @@ public class EmailServiceImpl implements EmailService {
     	String content = "{0} has requested exhibition space. <br><br>"
     			+ "Email address: {1}. <br>"
     			+ "Stacks address: {2}. <br><br>"
-    			+ "To approve go to: <a href=\\\"https://thisisnumberone.com/admin/exhibit-requests\\\">Exhibit Requests</a>";
+    			+ "To approve go to: <a href=\\\"https://thisisnumberone.com/admin/app-admin\\\">Exhibit Requests</a>";
     	
 		String requestorName = exhibitRequest.getName() == null ? exhibitRequest.getStxAddress()
 				: exhibitRequest.getName();
