@@ -40,7 +40,7 @@ public class StacksTransactionsController {
 	public StacksTransaction updateTransaction(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) {
 		StacksTransaction st = stacksTransactionRepository.findByTxId(stacksTransaction.getTxId());
 		if (st == null) {
-			throw new RuntimeException("Expected a transaction: " + stacksTransaction.getTxId());
+			st = stacksTransactionRepository.save(st);
 		}
 		st.setTxStatus(stacksTransaction.getTxStatus());
 		stacksTransactionRepository.save(st);

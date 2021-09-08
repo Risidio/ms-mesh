@@ -29,6 +29,10 @@ public class StacksMateController {
 	@PostMapping(value = "/v2/stacksmate/transactions")
 	public StacksMateTransaction save(@RequestBody StacksMateTransaction stacksMateTransaction)
 			throws JsonMappingException, JsonProcessingException {
+		StacksMateTransaction smt = stacksMateRepository.findByPaymentId(stacksMateTransaction.getPaymentId());
+		if (smt != null) {
+			stacksMateTransaction.setId(smt.getId());
+		}
 		stacksMateTransaction = stacksMateRepository.save(stacksMateTransaction);
 		return stacksMateTransaction;
 	}

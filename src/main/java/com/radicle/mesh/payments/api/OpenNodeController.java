@@ -47,13 +47,13 @@ public class OpenNodeController {
 
 	@PostMapping(value = "/v2/fetchPayment")
 	public String fetchPayment(HttpServletRequest request, @RequestBody OpenNodePayment fetchPayment) {
-		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment=", fetchPayment);
 		String url = apiEndpoint +  "/v1/charges";
 		ResponseEntity<String> response = null;
 		fetchPayment.setCallback_url(CALLBACK_URL);
 		String jsonInString = convertMessage(fetchPayment);
 		HttpEntity<String> entity = new HttpEntity<String>(jsonInString, getHeaders());
-		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment=", fetchPayment);
+		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment json", jsonInString);
+		logger.info("PAYMENTS-OPENNODE: Creating Charge - fetchPayment=", fetchPayment.toString());
 		response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 		return response.getBody();
 	}

@@ -15,6 +15,8 @@ public interface StacksMateRepository extends MongoRepository<StacksMateTransact
 
 	public StacksMateTransaction findTopByOrderByNonceDesc();
 
+	public StacksMateTransaction findByPaymentId(String paymentId);
+
 	public List<StacksMateTransaction> findByRecipient(String recipient, Sort sort);
 
 }
