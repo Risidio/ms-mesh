@@ -17,15 +17,13 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "LoopbombConfig")
+@TypeAlias(value = "LoopSpin")
 @Document
-public class LoopbombConfig {
+public class LoopSpin {
 
 	@Id private String id;
-	private Integer spinsPerDay;
-	private String currentRunKey;
-	private String currentRun;
-	private Integer versionLimit;
-	private Integer tokenCount;
+	private Integer year;
+	private Integer dayOfYear;
+	private String stxAddress;
 
 }

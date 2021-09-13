@@ -38,6 +38,7 @@ public class Asset {
 	private String image;
 	private String externalUrl;
 	private String metaDataUrl;
+	private String currentRunKey;
 	private String privacy;
 	private String artist;
 	private String objType;

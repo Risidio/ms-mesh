@@ -16,9 +16,9 @@ public class LoopRunServiceImpl implements LoopRunService {
 	@Autowired
 	private MongoTemplate mongoTemplate;
  
-	public List<Token> getTokensByVersion(String versionId) {
+	public List<Token> getTokensByRunKey(String runKey) {
 		Query query = new Query();
-		query.addCriteria(Criteria.where("tokenInfo.metaDataUrl").regex("/" + versionId + "/"));
+		query.addCriteria(Criteria.where("tokenInfo.metaDataUrl").regex("/" + runKey + "/"));
 		List<Token> tokens = mongoTemplate.find(query, Token.class);
 		return tokens;
 	}

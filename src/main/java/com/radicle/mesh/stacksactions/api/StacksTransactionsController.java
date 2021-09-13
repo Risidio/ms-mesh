@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,15 +22,16 @@ import com.radicle.mesh.stacksactions.service.domain.StacksTransaction;
 @RestController
 @EnableAsync
 @EnableScheduling
-//@CrossOrigin(origins = { "http://localhost:8085", "http://localhost:8082", "http://localhost:8080", "https://prom.risidio.com", "https://thisisnumberone.com", "https://staging.thisisnumberone.com", "https://tchange.risidio.com", "https://tchange.risidio.com", "https://xchange.risidio.com", "https://truma.risidio.com", "https://ruma.risidio.com", "https://loopbomb.risidio.com", "https://stacks.loopbomb.com", "https://stacksmate.com", "https://test.stacksmate.com" }, maxAge = 6000)
 public class StacksTransactionsController {
 
+	private static final Logger logger = LogManager.getLogger(StacksTransactionsController.class);
 	@Autowired
 	private StacksTransactionRepository stacksTransactionRepository;
 
 	@PostMapping(value = "/v2/transaction")
-	public StacksTransaction registerTransaction(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) {
+	public StacksTransaction registerTransaction(@RequestBody StacksTransaction stacksTransaction) {
 		StacksTransaction st = stacksTransactionRepository.findByTxId(stacksTransaction.getTxId());
+		logger.info("Registering tx: " + stacksTransaction.getTxId());
 		if (st != null) {
 			stacksTransaction.setId(st.getId());
 		}
@@ -44,7 +47,7 @@ public class StacksTransactionsController {
 		}
 		st.setTxStatus(stacksTransaction.getTxStatus());
 		stacksTransactionRepository.save(st);
-		return stacksTransaction;
+		return st;
 	}
 
 	@GetMapping(value = "/v2/transaction/{txId}")

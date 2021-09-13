@@ -6,5 +6,5 @@ import com.radicle.mesh.stacks.service.domain.Token;
 
 public interface LoopRunService
 {
-	public List<Token> getTokensByVersion(String versionId);
+	public List<Token> getTokensByRunKey(String versionId);
 }

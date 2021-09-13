@@ -50,39 +50,57 @@ import com.radicle.mesh.stacksactions.service.domain.StacksTransaction;
 @RestController
 public class ContractCacheController {
 
-	@Autowired private RestOperations restTemplate;
+	@Autowired
+	private RestOperations restTemplate;
 	private static final Logger logger = LogManager.getLogger(ContractCacheController.class);
-	@Value("${radicle.stax.base-path}") String basePath;
-	@Value("${radicle.stax.sidecar-path}") String sidecarPath;
-	@Autowired private ObjectMapper mapper;
-	@Autowired private ContractReader contractReader;
-	@Autowired private SimpMessagingTemplate simpMessagingTemplate;
-	@Autowired private AppMapContractRepository appMapContractRepository;
-	@Autowired private ApplicationRepository applicationRepository;
-	@Autowired private TokenRepository tokenRepository;
-	@Autowired private TokenFilterRepository tokenFilterRepository;
-	@Value("${radicle.stax.admin-contract-address}") String adminContractAddress;
-	@Value("${radicle.stax.admin-contract-name}") String adminContractName;
-	@Autowired private GaiaHubReader gaiaHubReader;
+	@Value("${radicle.stax.base-path}")
+	String basePath;
+	@Value("${radicle.stax.sidecar-path}")
+	String sidecarPath;
+	@Autowired
+	private ObjectMapper mapper;
+	@Autowired
+	private ContractReader contractReader;
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
+	@Autowired
+	private AppMapContractRepository appMapContractRepository;
+	@Autowired
+	private ApplicationRepository applicationRepository;
+	@Autowired
+	private TokenRepository tokenRepository;
+	@Autowired
+	private TokenFilterRepository tokenFilterRepository;
+	@Value("${radicle.stax.admin-contract-address}")
+	String adminContractAddress;
+	@Value("${radicle.stax.admin-contract-name}")
+	String adminContractName;
+	@Autowired
+	private GaiaHubReader gaiaHubReader;
 
 	@PostMapping(value = "/v2/cache/update")
-	public Token cacheUpdate(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction) throws JsonMappingException, JsonProcessingException {
+	public Token cacheUpdate(HttpServletRequest request, @RequestBody StacksTransaction stacksTransaction)
+			throws JsonMappingException, JsonProcessingException {
 		Token token = null;
 		try {
 			if (stacksTransaction.getFunctionName().startsWith("mint-")) {
 				Long tokenCount = tokenRepository.countByContractId(stacksTransaction.getContractId());
 				token = contractReader.readSpecificToken(stacksTransaction.getContractId(), tokenCount);
 			} else if (stacksTransaction.getNftIndex() != null && stacksTransaction.getNftIndex() > -1) {
-				token = contractReader.readSpecificToken(stacksTransaction.getContractId(), stacksTransaction.getNftIndex());
+				token = contractReader.readSpecificToken(stacksTransaction.getContractId(),
+						stacksTransaction.getNftIndex());
 			} else if (stacksTransaction.getAssetHash() != null) {
-			    // PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
-			    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(stacksTransaction.getAssetHash(), 1L);
+				// PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC,
+				// "nftIndex"));
+				List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(stacksTransaction.getAssetHash(), 1L);
 				if (tokenPage != null && !tokenPage.isEmpty()) {
-					token = contractReader.readSpecificToken(stacksTransaction.getContractId(), tokenPage.get(0).getNftIndex());
+					token = contractReader.readSpecificToken(stacksTransaction.getContractId(),
+							tokenPage.get(0).getNftIndex());
 				}
 			}
 		} catch (Exception e) {
-			// cache miss - no need to report this as just means the client has asked for a asset thats not yet minted;
+			// cache miss - no need to report this as just means the client has asked for a
+			// asset thats not yet minted;
 		}
 		logger.info("Read cached token: " + token);
 		if (token != null) {
@@ -109,7 +127,8 @@ public class ContractCacheController {
 
 	@GetMapping(value = "/v2/registry")
 	public AppMapContract tokensAllProjects(HttpServletRequest request) {
-		AppMapContract ac = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
+		AppMapContract ac = appMapContractRepository
+				.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		List<Application> applications = applicationRepository.findAll();
 		ac.setApplications(applications);
 		return ac;
@@ -117,7 +136,8 @@ public class ContractCacheController {
 
 	@GetMapping(value = "/v2/registry/{contractId}")
 	public AppMapContract tokensAllProjects(HttpServletRequest request, @PathVariable String contractId) {
-		AppMapContract ac = appMapContractRepository.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
+		AppMapContract ac = appMapContractRepository
+				.findByAdminContractAddressAndAdminContractName(adminContractAddress, adminContractName);
 		Application application = applicationRepository.findByContractId(contractId);
 		List<Application> apps = new ArrayList<Application>();
 		apps.add(application);
@@ -156,12 +176,14 @@ public class ContractCacheController {
 	}
 
 	@PostMapping(value = "/v2/tokenFirstsByQuery")
-	public List<Token> tokenFirstsByQuery(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
+	public List<Token> tokenFirstsByQuery(HttpServletRequest request, @RequestBody CacheQuery cacheQuery)
+			throws JsonProcessingException {
 		return tokens(cacheQuery);
 	}
 
 	@PostMapping(value = "/v2/tokenFirstsByQueryAsString")
-	public Map<String, String> tokenFirstsByQueryAsString(HttpServletRequest request, @RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
+	public Map<String, String> tokenFirstsByQueryAsString(HttpServletRequest request,
+			@RequestBody CacheQuery cacheQuery) throws JsonProcessingException {
 		List<Token> tokens = tokens(cacheQuery);
 		Map<String, String> tokenMap = new HashMap<String, String>();
 		ObjectWriter ow = mapper.writer();
@@ -170,13 +192,15 @@ public class ContractCacheController {
 		}
 		return tokenMap;
 	}
-	
+
 	private List<Token> tokens(CacheQuery cacheQuery) {
 		List<Token> tokens = new ArrayList<Token>();
 		for (String assetHash : cacheQuery.getHashes()) {
-		    // PageRequest request = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
-		    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
-			if (tokenPage != null && !tokenPage.isEmpty()) tokens.add(tokenPage.get(0));
+			// PageRequest request = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC,
+			// "nftIndex"));
+			List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
+			if (tokenPage != null && !tokenPage.isEmpty())
+				tokens.add(tokenPage.get(0));
 		}
 //		List<Token> tokens = tokenRepository.findByContractIdAndEdition(cacheQuery.getContractId(), 1L);
 //		List<Token> listOutput =
@@ -193,55 +217,65 @@ public class ContractCacheController {
 	}
 
 	@GetMapping(value = "/v2/tokensByContractId/{contractId}")
-	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
+	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId)
+			throws JsonProcessingException {
 		List<Token> tokens = tokenRepository.findByContractId(contractId);
 		return tokens;
 	}
 
 	@GetMapping(value = "/v2/tokensByContractIdAndEdition/{contractId}/{edition}")
-	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long edition) throws JsonProcessingException {
+	public List<Token> tokensByContractIdAndEdition(HttpServletRequest request, @PathVariable String contractId,
+			@PathVariable Long edition) throws JsonProcessingException {
 		List<Token> tokens = tokenRepository.findByContractIdAndEdition(contractId, edition);
 		return tokens;
 	}
 
 	@GetMapping(value = "/v2/tokenByAssetHashAndEdition/{assetHash}/{edition}")
-	public Token tokensByAssetHashAndEdition(HttpServletRequest request, @PathVariable String assetHash, @PathVariable Long edition) throws JsonProcessingException {
-	    List<Token> tokens = tokenRepository.findByAssetHashAndEdition(assetHash, edition);
+	public Token tokensByAssetHashAndEdition(HttpServletRequest request, @PathVariable String assetHash,
+			@PathVariable Long edition) throws JsonProcessingException {
+		List<Token> tokens = tokenRepository.findByAssetHashAndEdition(assetHash, edition);
 		Token token = null;
-		if (tokens != null && !tokens.isEmpty()) token = tokens.get(0);
+		if (tokens != null && !tokens.isEmpty())
+			token = tokens.get(0);
 		return token;
 	}
 
 	@GetMapping(value = "/v2/tokensByProject/{contractId}")
-	public List<Token> tokensByProject(HttpServletRequest request, @PathVariable String contractId) throws JsonProcessingException {
+	public List<Token> tokensByProject(HttpServletRequest request, @PathVariable String contractId)
+			throws JsonProcessingException {
 		List<Token> tokens = tokenRepository.findByContractId(contractId);
 		return tokens;
 	}
 
 	@GetMapping(value = "/v2/tokensByProjectAndOwner/{contractId}/{stxAddress}")
-	public List<Token> tokensByProjectAndOwner(HttpServletRequest request, @PathVariable String contractId, @PathVariable String stxAddress) {
+	public List<Token> tokensByProjectAndOwner(HttpServletRequest request, @PathVariable String contractId,
+			@PathVariable String stxAddress) {
 		List<Token> tokens = tokenRepository.findByContractIdAndOwner(contractId, stxAddress);
 		return tokens;
 	}
 
 	@GetMapping(value = "/v2/tokenByHash/{assetHash}")
 	public Token tokenByHash(HttpServletRequest request, @PathVariable String assetHash) {
-	    // PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "nftIndex"));
-	    List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
+		// PageRequest pr = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC,
+		// "nftIndex"));
+		List<Token> tokenPage = tokenRepository.findByAssetHashAndEdition(assetHash, 1L);
 		Token token = null;
-		if (tokenPage != null && !tokenPage.isEmpty()) token = tokenPage.get(0);
+		if (tokenPage != null && !tokenPage.isEmpty())
+			token = tokenPage.get(0);
 		return token;
 	}
 
 	@GetMapping(value = "/v2/tokenByIndex/{contractId}/{nftIndex}")
-	public Token tokenByIndex(HttpServletRequest request, @PathVariable String contractId, @PathVariable Long nftIndex) {
+	public Token tokenByIndex(HttpServletRequest request, @PathVariable String contractId,
+			@PathVariable Long nftIndex) {
 		Token token = tokenRepository.findByContractIdAndNftIndex(contractId, nftIndex);
 		return token;
 	}
 
 	/**
-	 * Read user account information from the local node 
-	 * (instance of stacks blockchain running on localhost)
+	 * Read user account information from the local node (instance of stacks
+	 * blockchain running on localhost)
+	 * 
 	 * @param request
 	 * @param principal
 	 * @return
@@ -249,7 +283,8 @@ public class ContractCacheController {
 	 * @throws JsonProcessingException
 	 */
 	@PostMapping(value = "/v2/accounts")
-	public String accounts(HttpServletRequest request, @RequestBody Principal principal) throws JsonMappingException, JsonProcessingException {
+	public String accounts(HttpServletRequest request, @RequestBody Principal principal)
+			throws JsonMappingException, JsonProcessingException {
 		String url = basePath + principal.getPath();
 		if (principal.getPath().indexOf("/sidecar/v1") > -1) {
 			url = sidecarPath + principal.getPath();
@@ -264,8 +299,9 @@ public class ContractCacheController {
 	}
 
 	/**
-	 * Broadcast a signed transaction to the local node
-	 * (instance of stacks blockchain running on localhost)
+	 * Broadcast a signed transaction to the local node (instance of stacks
+	 * blockchain running on localhost)
+	 * 
 	 * @param request
 	 * @param payload
 	 * @return
@@ -273,11 +309,11 @@ public class ContractCacheController {
 	 */
 	@PostMapping(value = "/v2/broadcast", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public String broadcast(HttpServletRequest request, @RequestBody byte[] payload) throws IOException {
-	    //byte [] content = payload.getBytes();
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.set("Content-Type", "application/octet-stream");
-	    headers.set("Accept", "text/plain");
-	    HttpEntity<byte[]> requestEntity = new HttpEntity<>(payload, headers);
+		// byte [] content = payload.getBytes();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/octet-stream");
+		headers.set("Accept", "text/plain");
+		HttpEntity<byte[]> requestEntity = new HttpEntity<>(payload, headers);
 		String url = basePath + "/v2/transactions";
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
 		return response.getBody();
@@ -295,11 +331,11 @@ public class ContractCacheController {
 			return null;
 		}
 	}
-	
+
 	private String convertMessage(Object model) {
 		try {
 			return mapper.writeValueAsString(model);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias(value = "LoopbombConfig")
+@TypeAlias(value = "LoopRun")
 @Document
 public class StacksMateTransaction {
 
